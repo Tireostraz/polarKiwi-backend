@@ -51,3 +51,7 @@ export const login = async (req, res) => {
         res.status(500).json({ error: 'Ошибка сервера', detail: err.detail});
     }
 };
+
+export const verifyUserToken = async (res, req, next) => {
+
+}
