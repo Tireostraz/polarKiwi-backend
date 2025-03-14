@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export const register = async (req, res) =>{
+export const register = async (req, res) => {
     try {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
@@ -19,9 +19,35 @@ export const register = async (req, res) =>{
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
 
         res.status(201).json({ token });        
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Ошибка сервера ', detail: error.detail });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Ошибка сервера ', detail: err.detail });
         
     }
-}
+};
+
+export const login = async (req, res) => {
+    try {
+        const result = await pool.query(`SELECT * FROM users WHERE email= $1`, [req.body.email]);
+
+        if (result.rows.length === 0){
+            return res.status(400).json({ error: 'Неверный email или пароль' });
+        }
+
+        const user = result.rows[0];
+
+        const passwordMatch = await bcrypt.compare(req.body.password, user.password);
+
+        if (!passwordMatch){
+            return res.status(400).json({ error: 'Введён неверный пароль' });
+        }
+
+        const payload = {user_id:  user.user_id, user_type_id: user.user_type_id };
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
+        
+        res.status(200).json({ token });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Ошибка сервера', detail: err.detail});
+    }
+};
