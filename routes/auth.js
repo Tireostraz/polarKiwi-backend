@@ -1,48 +1,49 @@
 import express from "express";
 import { register, login } from "../controllers/authController.js";
-import { verifyUserToken } from "../middleware/auth.js";
 
 const router = express.Router();
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: Авторизация и регистрация
+ */
 
 /**
  * @swagger
  * /auth/register:
  *   post:
  *     summary: Регистрация нового пользователя
- *     description: Создаёт нового пользователя и возвращает JWT.
- *     tags:
- *       - Authentication
+ *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
+ *               - name
+ *               - password
+ *               - role
  *             properties:
  *               email:
  *                 type: string
  *                 example: user@example.com
  *               name:
  *                 type: string
- *                 example: John Doe
+ *                 example: User
  *               password:
  *                 type: string
- *                 example: securepassword
- *               user_type_id:
- *                 type: integer
- *                 example: 1
+ *                 example: secretPassword
+ *               role:
+ *                 type: string
+ *                 example: user
  *     responses:
  *       201:
- *         description: Пользователь успешно зарегистрирован
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *       500:
- *         description: Ошибка сервера
+ *         description: Пользователь зарегистрирован, возвращает токен
+ *       400:
+ *         description: Ошибка валидации или пользователь уже существует
  */
 router.post('/register', register);
 
@@ -51,36 +52,28 @@ router.post('/register', register);
  * /auth/login:
  *   post:
  *     summary: Авторизация пользователя
- *     description: Проверяет email и пароль, возвращает JWT-токен.
- *     tags:
- *       - Authentication
+ *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
+ *               - password
  *             properties:
  *               email:
  *                 type: string
  *                 example: user@example.com
  *               password:
  *                 type: string
- *                 example: securepassword
+ *                 example: secretPassword
  *     responses:
  *       200:
- *         description: Успешная авторизация
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
+ *         description: Авторизация успешна, возвращает токен
  *       400:
  *         description: Неверный email или пароль
- *       500:
- *         description: Ошибка сервера
  */
 router.post('/login', login);
 

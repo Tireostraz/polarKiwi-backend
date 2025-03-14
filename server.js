@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js";
+import adminRoutes from "./routes/admin.js"
 import swaggerDocs from "./utils/swagger.js";
 import cors from 'cors';
 
@@ -17,6 +18,7 @@ app.use(cors({
 app.use(express.json()); // Для работы с JSON
 
 app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes)
 
 
 swaggerDocs(app);

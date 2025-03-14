@@ -15,8 +15,18 @@ const options = {
                 description: 'Local server',
             },
         ],
+        components: {
+            securitySchemes: {
+                BearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
+                },
+            },
+        },
+        security: [{ BearerAuth: [] }],
     },
-    apis: ['./routes/auth.js'], // файл с роутами
+    apis: ['./routes/*.js'], // файл с роутами
 };
 
 const swaggerSpec = swaggerJSDoc(options);

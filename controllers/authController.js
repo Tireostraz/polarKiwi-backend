@@ -7,15 +7,35 @@ dotenv.config();
 
 export const register = async (req, res) => {
     try {
+        const { email, name, password, role } = req.body;
+        
+        // Проверка наличия данного пользователя
+        const userCheck = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
+        if (userCheck.rows.length > 0){
+            return res.status(400).json({ message: 'Этот email уже используется'});
+        }
+
+        // Хэширование пароля
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
+        // Находим ID роли по названию
+        /*
+        const roleResult = await pool.query('SELECT id FROM roles WHERE name = $1', [role]);
+        if (roleResult.rows.length === 0) {
+            return res.status(400).json({ message: 'Неверная роль' });
+        }
+        const userTypeId = roleResult.rows[0].id;
+        */
+
+        const userTypeId = req.body.user_type_id;
+
         const result = await pool.query(
             `INSERT INTO users (email, username, password, user_type_id) VALUES ($1, $2, $3, $4) RETURNING user_id`,
-            [req.body.email, req.body.name, hashedPassword, req.body.user_type_id || 0]
+            [email, name, hashedPassword, userTypeId || 1]
         );
 
-        const payload = { user_id: result.rows[0].id, user_type_id: req.body.user_type_id || 0};
+        const payload = { id: result.rows[0].id, user_type_id: req.body.user_type_id || 1};
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
 
         res.status(201).json({ token });        
@@ -28,21 +48,26 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
     try {
-        const result = await pool.query(`SELECT * FROM users WHERE email= $1`, [req.body.email]);
+        const { email, password } = req.body;
 
-        if (result.rows.length === 0){
+        const userResult = await pool.query(
+            `SELECT * FROM users WHERE email = $1`,
+            [email]
+        );
+
+        if (userResult.rows.length === 0){
             return res.status(400).json({ error: 'Неверный email или пароль' });
         }
 
-        const user = result.rows[0];
+        const user = userResult.rows[0];
+        console.log(user)
 
-        const passwordMatch = await bcrypt.compare(req.body.password, user.password);
-
+        const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch){
             return res.status(400).json({ error: 'Введён неверный пароль' });
         }
 
-        const payload = {user_id:  user.user_id, user_type_id: user.user_type_id };
+        const payload = { id:  user.id, role: user.role };
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
         
         res.status(200).json({ token });
@@ -52,6 +77,3 @@ export const login = async (req, res) => {
     }
 };
 
-export const verifyUserToken = async (res, req, next) => {
-
-}
