@@ -35,7 +35,14 @@ export const register = async (req, res) => {
             [email, name, hashedPassword, userTypeId || 1]
         );
 
-        const payload = { id: result.rows[0].id, user_type_id: req.body.user_type_id || 1};
+        const roleResult = await pool.query(
+            `SELECT name AS role FROM roles WHERE id = $1`,
+            [userTypeId]
+        );
+
+        const userRole = roleResult.rows[0]; // возвращает { role: 'user' }
+
+        const payload = { id: result.rows[0].user_id, role: userRole.role };
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
 
         res.status(201).json({ token });        
@@ -51,7 +58,7 @@ export const login = async (req, res) => {
         const { email, password } = req.body;
 
         const userResult = await pool.query(
-            `SELECT * FROM users WHERE email = $1`,
+            `SELECT users.user_id, users.password, roles.name AS role FROM users JOIN roles ON users.user_type_id = roles.id WHERE users.email = $1`,
             [email]
         );
 
@@ -60,14 +67,13 @@ export const login = async (req, res) => {
         }
 
         const user = userResult.rows[0];
-        console.log(user)
 
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch){
             return res.status(400).json({ error: 'Введён неверный пароль' });
         }
 
-        const payload = { id:  user.id, role: user.role };
+        const payload = { id:  user.user_id, role: user.role};
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
         
         res.status(200).json({ token });
