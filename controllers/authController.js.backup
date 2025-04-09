@@ -24,6 +24,7 @@ export const register = async (req, res) => {
   try {
     const { email, name, password, user_type_id } = req.body;
 
+    // Проверка наличия данного пользователя
     const userCheck = await pool.query(`SELECT * FROM users WHERE email = $1`, [
       email,
     ]);
@@ -31,10 +32,20 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "Этот email уже используется" });
     }
 
+    // Хэширование пароля
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
-    const userTypeId = user_type_id;
+    // Находим ID роли по названию
+    /*
+        const roleResult = await pool.query('SELECT id FROM roles WHERE name = $1', [role]);
+        if (roleResult.rows.length === 0) {
+            return res.status(400).json({ message: 'Неверная роль' });
+        }
+        const userTypeId = roleResult.rows[0].id;
+        */
+
+    const userTypeId = req.body.user_type_id;
 
     const result = await pool.query(
       `INSERT INTO users (email, username, password, user_type_id) VALUES ($1, $2, $3, $4) RETURNING user_id`,
@@ -45,23 +56,18 @@ export const register = async (req, res) => {
       `SELECT name AS role FROM roles WHERE id = $1`,
       [userTypeId]
     );
-    const userRole = roleResult.rows[0];
+
+    const userRole = roleResult.rows[0]; // возвращает { role: 'user' }
 
     const payload = { id: result.rows[0].user_id, role: userRole.role };
-    const accessToken = generateAccessToken(payload);
-    const refreshToken = generateRefreshToken(payload);
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true, //  Включи только при HTTPS
-      sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN,
     });
 
-    res.status(201).json({ accessToken });
+    res.status(201).json({ token });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Ошибка сервера", detail: err.detail });
+    res.status(500).json({ error: "Ошибка сервера ", detail: err.detail });
   }
 };
 
@@ -86,38 +92,13 @@ export const login = async (req, res) => {
     }
 
     const payload = { id: user.user_id, role: user.role };
-    const accessToken = generateAccessToken(payload);
-    const refreshToken = generateRefreshToken(payload);
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN,
     });
 
-    res.status(200).json({ accessToken });
+    res.status(200).json({ token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Ошибка сервера", detail: err.detail });
   }
-};
-
-export const refreshToken = (req, res) => {
-  const token = req.cookies.refreshToken;
-  if (!token) return res.sendStatus(401);
-
-  jwt.verify(token, REFRESH_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    const newAccessToken = generateAccessToken({
-      id: user.id,
-      role: user.role,
-    });
-    res.json({ accessToken: newAccessToken });
-  });
-};
-
-export const logout = (req, res) => {
-  res.clearCookie("refreshToken");
-  res.sendStatus(200);
 };

@@ -1,5 +1,10 @@
 import express from "express";
-import { register, login } from "../controllers/authController.js";
+import {
+  register,
+  login,
+  refreshToken,
+  logout,
+} from "../controllers/authController.js";
 
 const router = express.Router();
 /**
@@ -45,7 +50,7 @@ const router = express.Router();
  *       400:
  *         description: Ошибка валидации или пользователь уже существует
  */
-router.post('/register', register);
+router.post("/register", register);
 
 /**
  * @swagger
@@ -75,6 +80,42 @@ router.post('/register', register);
  *       400:
  *         description: Неверный email или пароль
  */
-router.post('/login', login);
+router.post("/login", login);
+
+/**
+ * @swagger
+ * /auth/refresh:
+ *   post:
+ *     summary: Обновление access токена по refresh токену из cookie
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Возвращает новый access токен
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   description: Новый JWT access токен
+ *       401:
+ *         description: Refresh токен не найден
+ *       403:
+ *         description: Refresh токен недействителен или истёк
+ */
+router.post("/refresh", refreshToken);
+
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Выход пользователя и удаление refresh токена из cookie
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Выход выполнен успешно
+ */
+router.post("/logout", logout);
 
 export default router;
