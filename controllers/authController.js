@@ -45,8 +45,9 @@ export const register = async (req, res) => {
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
+      //secure: process.env.NODE_ENV === "production" ? "true" : "false",
+      secure: "false",
+      sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None",
       maxAge: process.env.JWT_REFRESH_EXPIRES_IN_MS,
     });
 
@@ -84,8 +85,9 @@ export const login = async (req, res) => {
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
+      //secure: process.env.NODE_ENV === "production" ? "true" : "false",
+      secure: "false",
+      sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None",
       maxAge: process.env.JWT_REFRESH_EXPIRES_IN_MS,
     });
 
@@ -122,9 +124,24 @@ export const refreshToken = (req, res) => {
 export const logout = (req, res) => {
   res.clearCookie("refreshToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
+    //secure: process.env.NODE_ENV === "production" ? "true" : "false",
+    secure: "false",
+    sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None",
   });
 
   res.status(200).json({ message: "Выход выполнен успешно" });
+};
+
+export const me = (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Неавторизированный запрос" });
+  }
+  console.log(req.user);
+
+  res.json({
+    id: req.user.user_id,
+    email: req.user.email,
+    name: req.user.username,
+    role: req.user.user_type_id,
+  });
 };

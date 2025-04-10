@@ -1,9 +1,11 @@
 import express from "express";
+import { authenticateToken } from "../middleware/authMiddleware.js";
 import {
   register,
   login,
   refreshToken,
   logout,
+  me,
 } from "../controllers/authController.js";
 
 const router = express.Router();
@@ -142,5 +144,38 @@ router.post("/refresh", refreshToken);
  *               example: refreshToken=; HttpOnly; Secure; Path=/auth/refresh; Max-Age=0
  */
 router.post("/logout", logout);
+
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Получение информации о текущем пользователе
+ *     tags: [Auth]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Информация о текущем пользователе
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   example: 1
+ *                 email:
+ *                   type: string
+ *                   example: user@example.com
+ *                 name:
+ *                   type: string
+ *                   example: John Doe
+ *                 user_type_id:
+ *                   type: integer
+ *                   example: 1
+ *       401:
+ *         description: Пользователь не авторизован (токен отсутствует или недействителен)
+ */
+router.get("/me", authenticateToken, me);
 
 export default router;
