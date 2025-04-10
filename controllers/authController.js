@@ -5,24 +5,21 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const ACCESS_SECRET = process.env.ACCESS_SECRET;
-const REFRESH_SECRET = process.env.REFRESH_SECRET;
-
 const generateAccessToken = (payload) => {
-  return jwt.sign(payload, ACCESS_SECRET, {
-    expiresIn: process.env.ACCESS_EXPIRES_IN,
+  return jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
 
 const generateRefreshToken = (payload) => {
-  return jwt.sign(payload, REFRESH_SECRET, {
-    expiresIn: process.env.REFRESH_EXPIRES_IN,
+  return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
   });
 };
 
 export const register = async (req, res) => {
   try {
-    const { email, name, password, user_type_id } = req.body;
+    const { email, name, password, role } = req.body;
 
     const userCheck = await pool.query(`SELECT * FROM users WHERE email = $1`, [
       email,
@@ -34,28 +31,23 @@ export const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const userTypeId = user_type_id;
+    const userTypeId = req.body.user_type_id || 1;
 
     const result = await pool.query(
       `INSERT INTO users (email, username, password, user_type_id) VALUES ($1, $2, $3, $4) RETURNING user_id`,
-      [email, name, hashedPassword, userTypeId || 1]
+      [email, name, hashedPassword, userTypeId]
     );
 
-    const roleResult = await pool.query(
-      `SELECT name AS role FROM roles WHERE id = $1`,
-      [userTypeId]
-    );
-    const userRole = roleResult.rows[0];
+    const payload = { id: result.rows[0].user_id, user_type_id: userTypeId };
 
-    const payload = { id: result.rows[0].user_id, role: userRole.role };
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true, //  Включи только при HTTPS
+      secure: process.env.NODE_ENV === "production",
       sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: process.env.JWT_REFRESH_EXPIRES_IN_MS,
     });
 
     res.status(201).json({ accessToken });
@@ -70,7 +62,7 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     const userResult = await pool.query(
-      `SELECT users.user_id, users.password, roles.name AS role FROM users JOIN roles ON users.user_type_id = roles.id WHERE users.email = $1`,
+      `SELECT * FROM users WHERE email = $1`,
       [email]
     );
 
@@ -85,15 +77,16 @@ export const login = async (req, res) => {
       return res.status(400).json({ error: "Введён неверный пароль" });
     }
 
-    const payload = { id: user.user_id, role: user.role };
+    const payload = { id: user.user_id, role: user.user_type_id };
+
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: process.env.JWT_REFRESH_EXPIRES_IN_MS,
     });
 
     res.status(200).json({ accessToken });
@@ -104,20 +97,34 @@ export const login = async (req, res) => {
 };
 
 export const refreshToken = (req, res) => {
-  const token = req.cookies.refreshToken;
-  if (!token) return res.sendStatus(401);
+  try {
+    const token = req.cookies.refreshToken;
+    if (!token) {
+      return res.status(401).json({ error: "Refresh токен отсутствует" });
+    }
 
-  jwt.verify(token, REFRESH_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    const newAccessToken = generateAccessToken({
-      id: user.id,
-      role: user.role,
+    jwt.verify(token, process.env.JWT_REFRESH_SECRET, (err, decoded) => {
+      if (err) {
+        return res.status(403).json({ error: "Refresh токен недействителен" });
+      }
+
+      const payload = { id: decoded.id, role: decoded.role };
+      const newAccessToken = generateAccessToken(payload);
+
+      res.status(200).json({ accessToken: newAccessToken });
     });
-    res.json({ accessToken: newAccessToken });
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Ошибка сервера" });
+  }
 };
 
 export const logout = (req, res) => {
-  res.clearCookie("refreshToken");
-  res.sendStatus(200);
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Strict",
+  });
+
+  res.status(200).json({ message: "Выход выполнен успешно" });
 };

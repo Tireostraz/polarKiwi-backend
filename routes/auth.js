@@ -30,23 +30,32 @@ const router = express.Router();
  *               - email
  *               - name
  *               - password
- *               - role
  *             properties:
  *               email:
  *                 type: string
  *                 example: user@example.com
  *               name:
  *                 type: string
- *                 example: User
+ *                 example: John Doe
  *               password:
  *                 type: string
  *                 example: secretPassword
- *               role:
- *                 type: string
- *                 example: user
  *     responses:
  *       201:
- *         description: Пользователь зарегистрирован, возвращает токен
+ *         description: Регистрация успешна, accessToken возвращается в JSON, refreshToken устанавливается в cookie
+ *         headers:
+ *           Set-Cookie:
+ *             schema:
+ *               type: string
+ *               example: refreshToken=xyz123; HttpOnly; Secure; Path=/auth/refresh
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   description: JWT access-токен
  *       400:
  *         description: Ошибка валидации или пользователь уже существует
  */
@@ -76,7 +85,20 @@ router.post("/register", register);
  *                 example: secretPassword
  *     responses:
  *       200:
- *         description: Авторизация успешна, возвращает токен
+ *         description: Авторизация успешна
+ *         headers:
+ *           Set-Cookie:
+ *             schema:
+ *               type: string
+ *               example: refreshToken=xyz123; HttpOnly; Secure; Path=/auth/refresh
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   description: JWT access-токен
  *       400:
  *         description: Неверный email или пароль
  */
@@ -86,11 +108,11 @@ router.post("/login", login);
  * @swagger
  * /auth/refresh:
  *   post:
- *     summary: Обновление access токена по refresh токену из cookie
+ *     summary: Обновление access-токена
  *     tags: [Auth]
  *     responses:
  *       200:
- *         description: Возвращает новый access токен
+ *         description: Новый access-токен
  *         content:
  *           application/json:
  *             schema:
@@ -98,11 +120,9 @@ router.post("/login", login);
  *               properties:
  *                 accessToken:
  *                   type: string
- *                   description: Новый JWT access токен
+ *                   description: Новый access-токен
  *       401:
- *         description: Refresh токен не найден
- *       403:
- *         description: Refresh токен недействителен или истёк
+ *         description: Refresh-токен невалиден или отсутствует
  */
 router.post("/refresh", refreshToken);
 
@@ -110,11 +130,16 @@ router.post("/refresh", refreshToken);
  * @swagger
  * /auth/logout:
  *   post:
- *     summary: Выход пользователя и удаление refresh токена из cookie
+ *     summary: Выход из системы
  *     tags: [Auth]
  *     responses:
  *       200:
- *         description: Выход выполнен успешно
+ *         description: Удаляет refresh-токен
+ *         headers:
+ *           Set-Cookie:
+ *             schema:
+ *               type: string
+ *               example: refreshToken=; HttpOnly; Secure; Path=/auth/refresh; Max-Age=0
  */
 router.post("/logout", logout);
 
