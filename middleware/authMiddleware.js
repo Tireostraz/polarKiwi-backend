@@ -12,12 +12,12 @@ export const authenticateToken = async (req, res, next) => {
   if (authHeader && authHeader.startsWith("Bearer ")) {
     token = authHeader.split(" ")[1];
   }
-  console.log(authHeader);
 
   // Если в заголовке нет токена, пытаемся получить его из cookies
   if (!token && req.cookies.accessToken) {
     token = req.cookies.accessToken;
   }
+  console.log(token);
 
   if (!token) {
     return res.status(401).json({ message: "Токен отсутствует" });

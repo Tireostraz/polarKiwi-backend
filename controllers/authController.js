@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import pool from "../db/db.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { parseTimeToMs } from "../utils/timeParser.js";
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ const generateRefreshToken = (payload) => {
 
 export const register = async (req, res) => {
   try {
-    const { email, name, password, role } = req.body;
+    const { email, name, password } = req.body;
 
     const userCheck = await pool.query(`SELECT * FROM users WHERE email = $1`, [
       email,
@@ -32,26 +33,36 @@ export const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const userTypeId = req.body.user_type_id || 1;
+    const role = "user";
 
     const result = await pool.query(
       `INSERT INTO users (email, username, password, user_type_id) VALUES ($1, $2, $3, $4) RETURNING user_id`,
       [email, name, hashedPassword, userTypeId]
     );
 
-    const payload = { id: result.rows[0].user_id, user_type_id: userTypeId };
+    const payload = { id: result.rows[0].user_id, role: role };
 
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
+      path: "/",
       //secure: process.env.NODE_ENV === "production" ? "true" : "false",
       secure: "false",
       sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None",
-      maxAge: process.env.JWT_REFRESH_EXPIRES_IN_MS,
+      maxAge: parseTimeToMs(process.env.JWT_REFRESH_EXPIRES_IN),
     });
 
-    res.status(201).json({ accessToken });
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      path: "/",
+      secure: "false",
+      sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None",
+      maxAge: parseTimeToMs(process.env.JWT_EXPIRES_IN),
+    });
+
+    res.status(201).json({ message: "Регистрация успешна" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Ошибка сервера", detail: err.detail });
@@ -60,10 +71,10 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
 
     const userResult = await pool.query(
-      `SELECT * FROM users WHERE email = $1`,
+      `SELECT user_id, username, password, email, roles.name as role FROM users, roles WHERE user_type_id = roles.id AND email = $1`,
       [email]
     );
 
@@ -78,20 +89,36 @@ export const login = async (req, res) => {
       return res.status(400).json({ error: "Введён неверный пароль" });
     }
 
-    const payload = { id: user.user_id, role: user.user_type_id };
+    const payload = { id: user.user_id, role: user.role };
 
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
 
-    res.cookie("refreshToken", refreshToken, {
+    //Access Token
+    res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      //secure: process.env.NODE_ENV === "production" ? "true" : "false",
+      path: "/",
       secure: "false",
       sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None",
-      maxAge: process.env.JWT_REFRESH_EXPIRES_IN_MS,
+      maxAge: rememberMe
+        ? parseTimeToMs(process.env.JWT_EXPIRES_IN)
+        : undefined,
     });
+    console.log("access cookie sent to user");
 
-    res.status(200).json({ accessToken });
+    if (rememberMe) {
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        path: "/",
+        //secure: process.env.NODE_ENV === "production" ? "true" : "false",
+        secure: "false",
+        sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None",
+        maxAge: parseTimeToMs(process.env.JWT_REFRESH_EXPIRES_IN),
+      });
+      console.log("refresh cookie sent to user");
+    }
+
+    res.status(200).json({ message: "Вход выполнен успешно" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Ошибка сервера", detail: err.detail });
@@ -122,12 +149,15 @@ export const refreshToken = (req, res) => {
 };
 
 export const logout = (req, res) => {
-  res.clearCookie("refreshToken", {
+  /* res.clearCookie("refreshToken", {
     httpOnly: true,
+    path: "/",
     //secure: process.env.NODE_ENV === "production" ? "true" : "false",
     secure: "false",
     sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None",
-  });
+  }); */
+  res.clearCookie("refreshToken");
+  res.clearCookie("accessToken");
 
   res.status(200).json({ message: "Выход выполнен успешно" });
 };
@@ -136,12 +166,11 @@ export const me = (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: "Неавторизированный запрос" });
   }
-  console.log(req.user);
 
   res.json({
     id: req.user.user_id,
-    email: req.user.email,
     name: req.user.username,
-    role: req.user.user_type_id,
+    email: req.user.email,
+    role: req.user.role,
   });
 };

@@ -1,14 +1,14 @@
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+import { swaggerSchemas } from "./swaggerschemas.js";
 
 const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Auth API",
+      title: "PolarKiwi API",
       version: "1.0.0",
-      description:
-        "Документация для API для аутентификации (регистрация и логин)",
+      description: "Документация для API интернет-магазина PolarKiwi",
     },
     servers: [
       {
@@ -24,10 +24,11 @@ const options = {
           bearerFormat: "JWT",
         },
       },
+      schemas: swaggerSchemas,
     },
     security: [{ BearerAuth: [] }],
   },
-  apis: ["./routes/*.js"], // файл с роутами
+  apis: ["./routes/*.js"],
 };
 
 const swaggerSpec = swaggerJSDoc(options);

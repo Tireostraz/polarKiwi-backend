@@ -35,31 +35,41 @@ const router = express.Router();
  *             properties:
  *               email:
  *                 type: string
+ *                 format: email
  *                 example: user@example.com
  *               name:
  *                 type: string
- *                 example: John Doe
+ *                 example: Иван Иванов
  *               password:
  *                 type: string
- *                 example: secretPassword
+ *                 format: password
+ *                 example: securePassword123
+ *               user_type_id:
+ *                 type: integer
+ *                 description: ID типа пользователя (опционально)
+ *                 example: 1
  *     responses:
  *       201:
- *         description: Регистрация успешна, accessToken возвращается в JSON, refreshToken устанавливается в cookie
+ *         description: Пользователь успешно зарегистрирован
  *         headers:
  *           Set-Cookie:
  *             schema:
  *               type: string
- *               example: refreshToken=xyz123; HttpOnly; Secure; Path=/auth/refresh
+ *               example: |
+ *                 refreshToken=xyz123; HttpOnly; Path=/; Max-Age=604800
+ *                 accessToken=abc456; HttpOnly; Path=/; Max-Age=900
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 accessToken:
+ *                 message:
  *                   type: string
- *                   description: JWT access-токен
+ *                   example: Регистрация успешна
  *       400:
- *         description: Ошибка валидации или пользователь уже существует
+ *         description: Ошибка валидации или email уже используется
+ *       500:
+ *         description: Ошибка сервера
  */
 router.post("/register", register);
 
@@ -81,28 +91,38 @@ router.post("/register", register);
  *             properties:
  *               email:
  *                 type: string
+ *                 format: email
  *                 example: user@example.com
  *               password:
  *                 type: string
- *                 example: secretPassword
+ *                 format: password
+ *                 example: securePassword123
+ *               rememberMe:
+ *                 type: boolean
+ *                 description: Запомнить пользователя (долгоживущие куки)
+ *                 example: true
  *     responses:
  *       200:
- *         description: Авторизация успешна
+ *         description: Успешная авторизация
  *         headers:
  *           Set-Cookie:
  *             schema:
  *               type: string
- *               example: refreshToken=xyz123; HttpOnly; Secure; Path=/auth/refresh
+ *               example: |
+ *                 refreshToken=xyz123; HttpOnly; Path=/; Max-Age=604800
+ *                 accessToken=abc456; HttpOnly; Path=/; Max-Age=900
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 accessToken:
+ *                 message:
  *                   type: string
- *                   description: JWT access-токен
+ *                   example: Вход выполнен успешно
  *       400:
  *         description: Неверный email или пароль
+ *       500:
+ *         description: Ошибка сервера
  */
 router.post("/login", login);
 
@@ -131,7 +151,7 @@ router.post("/refresh", refreshToken);
 /**
  * @swagger
  * /auth/logout:
- *   post:
+ *   get:
  *     summary: Выход из системы
  *     tags: [Auth]
  *     responses:
@@ -143,7 +163,7 @@ router.post("/refresh", refreshToken);
  *               type: string
  *               example: refreshToken=; HttpOnly; Secure; Path=/auth/refresh; Max-Age=0
  */
-router.post("/logout", logout);
+router.get("/logout", logout);
 
 /**
  * @swagger
@@ -164,15 +184,15 @@ router.post("/logout", logout);
  *                 id:
  *                   type: integer
  *                   example: 1
- *                 email:
- *                   type: string
- *                   example: user@example.com
  *                 name:
  *                   type: string
  *                   example: John Doe
- *                 user_type_id:
- *                   type: integer
- *                   example: 1
+ *                 email:
+ *                   type: string
+ *                   example: user@example.com
+ *                 role:
+ *                   type: user | admin
+ *                   example: user
  *       401:
  *         description: Пользователь не авторизован (токен отсутствует или недействителен)
  */
