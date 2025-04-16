@@ -19,7 +19,7 @@ export const getProducts = async (req, res) => {
       params.push(category);
     }
 
-    query += ` GROUP BY p.id`;
+    query += ` GROUP BY p.id ORDER BY p.id ASC`;
 
     const result = await pool.query(query, params);
     res.status(200).json(result.rows);

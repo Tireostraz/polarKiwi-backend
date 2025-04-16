@@ -8,6 +8,8 @@ export const authenticateToken = async (req, res, next) => {
   let token;
 
   // Проверяем наличие токена в заголовке Authorization
+
+  //TODO убрать эту часть, токен приходит только в куки
   const authHeader = req.header("Authorization");
   if (authHeader && authHeader.startsWith("Bearer ")) {
     token = authHeader.split(" ")[1];
@@ -17,7 +19,6 @@ export const authenticateToken = async (req, res, next) => {
   if (!token && req.cookies.accessToken) {
     token = req.cookies.accessToken;
   }
-  console.log(token);
 
   if (!token) {
     return res.status(401).json({ message: "Токен отсутствует" });
