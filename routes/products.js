@@ -85,22 +85,20 @@ router.get("/:id", getProductById);
  *                 type: array
  *                 items:
  *                   type: integer
+ *                 example: [1, 2, 3]
  *     responses:
  *       200:
- *         description: Массив данных товаров
+ *         description: Список найденных товаров
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 result:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/ProductDetails'
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ProductDetails'
  *       400:
- *         description: Некорректный формат запроса
+ *         description: Неверный запрос (отсутствует массив product_ids)
  *       500:
- *         description: Ошибка сервера
+ *         description: Внутренняя ошибка сервера
  */
 
 router.post("/batch", getProductsByIds);

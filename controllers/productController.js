@@ -120,7 +120,7 @@ export const getProductsByIds = async (req, res) => {
       // Добавь другие категории здесь по аналогии
     }
 
-    res.status(200).json({ result: products });
+    res.status(200).json(products);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Ошибка сервера" });
