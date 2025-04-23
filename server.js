@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js";
 import adminRoutes from "./routes/admin.js";
 import productRoutes from "./routes/products.js";
+import layoutRoutes from "./routes/layouts.js";
 
 import swaggerDocs from "./utils/swagger.js";
 import cookieParser from "cookie-parser";
@@ -32,6 +33,7 @@ app.use(express.json()); // Для работы с JSON
 app.use("/auth", authRoutes);
 app.use("/admin", adminRoutes);
 app.use("/products", productRoutes);
+app.use("/layouts", layoutRoutes);
 
 swaggerDocs(app);
 
