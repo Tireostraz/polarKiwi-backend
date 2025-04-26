@@ -1,5 +1,9 @@
 import express from "express";
-import { getLayouts, getLayoutById } from "../controllers/layoutsController.js";
+import {
+  getLayouts,
+  getLayoutById,
+  getPhotoLayouts,
+} from "../controllers/layoutsController.js";
 
 const router = express.Router();
 
@@ -99,5 +103,76 @@ const router = express.Router();
 
 router.get("/", getLayouts); // /layouts?type=cover | page
 router.get("/:id", getLayoutById); // /layouts/:id
+
+/**
+ * @swagger
+ * /layouts/photo:
+ *   post:
+ *     summary: Получить шаблоны фотомакетов по формату
+ *     tags: [Layouts]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               format:
+ *                 type: string
+ *                 description: Формат фотомакета (например, 'Standard')
+ *             required:
+ *               - format
+ *     responses:
+ *       200:
+ *         description: Список шаблонов фотомакетов
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/PhotoLayout'
+ *       500:
+ *         description: Ошибка сервера
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     PhotoLayout:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: Уникальный идентификатор шаблона
+ *         title:
+ *           type: string
+ *           description: Название шаблона
+ *         quantity:
+ *           type: number
+ *           description: Минимальное количество фото для заказа
+ *         size:
+ *           type: object
+ *           properties:
+ *             width:
+ *               type: integer
+ *               description: Ширина изображения
+ *             height:
+ *               type: integer
+ *               description: Высота изображения
+ *             top:
+ *               type: integer
+ *               description: Верхняя граница
+ *             right:
+ *               type: integer
+ *               description: Правая граница
+ *             bottom:
+ *               type: integer
+ *               description: Нижняя граница
+ *             left:
+ *               type: integer
+ *               description: Левая граница
+ */
+router.post("/photo", getPhotoLayouts); // /layouts/photo
 
 export default router;
