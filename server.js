@@ -4,6 +4,7 @@ import authRoutes from "./routes/auth.js";
 import adminRoutes from "./routes/admin.js";
 import productRoutes from "./routes/products.js";
 import layoutRoutes from "./routes/layouts.js";
+import uploadRoutes from "./routes/uploader.js";
 
 import swaggerDocs from "./utils/swagger.js";
 import cookieParser from "cookie-parser";
@@ -34,6 +35,11 @@ app.use("/auth", authRoutes);
 app.use("/admin", adminRoutes);
 app.use("/products", productRoutes);
 app.use("/layouts", layoutRoutes);
+
+app.use("/uploader", uploadRoutes); // POST /uploader/*
+app.use("/", uploadRoutes);
+
+app.use("/uploads", express.static("uploads"));
 
 swaggerDocs(app);
 
