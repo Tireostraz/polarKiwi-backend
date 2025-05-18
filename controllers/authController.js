@@ -140,7 +140,19 @@ export const refreshToken = (req, res) => {
       const payload = { id: decoded.id, role: decoded.role };
       const newAccessToken = generateAccessToken(payload);
 
-      res.status(200).json({ accessToken: newAccessToken });
+      //Access Token
+      res.cookie("accessToken", newAccessToken, {
+        httpOnly: true,
+        path: "/",
+        secure: "false",
+        sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None",
+        /* maxAge: rememberMe  //пока убрал, в запросе тут на рефреш нету поля rememberMe
+          ? parseTimeToMs(process.env.JWT_EXPIRES_IN)
+          : undefined, */
+      });
+      console.log("access cookie sent to user");
+
+      res.status(200).json({ message: "Access token отправлен успешно" });
     });
   } catch (err) {
     console.error(err);
