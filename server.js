@@ -5,6 +5,7 @@ import adminRoutes from "./routes/admin.js";
 import productRoutes from "./routes/products.js";
 import layoutRoutes from "./routes/layouts.js";
 import uploadRoutes from "./routes/uploader.js";
+import projectRoutes from "./routes/projects.js";
 
 import swaggerDocs from "./utils/swagger.js";
 import cookieParser from "cookie-parser";
@@ -35,6 +36,7 @@ app.use("/auth", authRoutes);
 app.use("/admin", adminRoutes);
 app.use("/products", productRoutes);
 app.use("/layouts", layoutRoutes);
+app.use("/projects", projectRoutes);
 
 app.use("/uploader", uploadRoutes); // POST /uploader/*
 app.use("/", uploadRoutes);
