@@ -41,13 +41,23 @@ export const getProjectById = async (req, res) => {
 export const createProject = async (req, res) => {
   try {
     const userId = req.user.user_id;
-    const { name, product_type, layout, data } = req.body;
+    const {
+      title,
+      type,
+      format,
+      product_id,
+      status = "draft",
+      pages = [],
+      photos = [],
+    } = req.body;
 
     const result = await pool.query(
-      `INSERT INTO projects (user_id, name, product_type, layout, data)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO projects 
+        (user_id, title, type, format, product_id, status, pages, photos)
+       VALUES 
+        ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [userId, name, product_type, layout, data]
+      [userId, title, type, format, product_id, status, pages, photos]
     );
 
     res.status(201).json(result.rows[0]);
@@ -62,14 +72,21 @@ export const updateProject = async (req, res) => {
   try {
     const userId = req.user.user_id;
     const { id } = req.params;
-    const { name, product_type, layout, data } = req.body;
+    const { title, type, format, product_id, status, pages, photos } = req.body;
 
     const result = await pool.query(
       `UPDATE projects
-       SET name = $1, product_type = $2, layout = $3, data = $4, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $5 AND user_id = $6
+       SET title = $1,
+           type = $2,
+           format = $3,
+           product_id = $4,
+           status = $5,
+           pages = $6,
+           photos = $7,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $8 AND user_id = $9
        RETURNING *`,
-      [name, product_type, layout, data, id, userId]
+      [title, type, format, product_id, status, pages, photos, id, userId]
     );
 
     if (result.rows.length === 0) {
@@ -102,7 +119,7 @@ export const deleteProject = async (req, res) => {
         .json({ message: "Проект не найден или нет доступа" });
     }
 
-    res.json({ message: "Проект удален" });
+    res.status(204).send();
   } catch (err) {
     console.error("Error deleting project:", err);
     res.status(500).json({ error: "Ошибка при удалении проекта" });

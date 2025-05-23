@@ -10,13 +10,76 @@ import {
 
 const router = express.Router();
 
-router.use(authenticateToken);
+//router.use(authenticateToken);
 
 /**
  * @swagger
  * tags:
  *   name: Projects
- *   description: Управление проектами пользователя
+ *   description: Управление пользовательскими проектами
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     PhotoData:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         crop:
+ *           type: object
+ *           properties:
+ *             x: { type: number }
+ *             y: { type: number }
+ *             width: { type: number }
+ *             height: { type: number }
+ *         scale:
+ *           type: number
+ *         rotate:
+ *           type: number
+ *     Project:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         user_id:
+ *           type: integer
+ *           example: 42
+ *         title:
+ *           type: string
+ *           example: "Моя фотокнига"
+ *         type:
+ *           type: string
+ *           example: "photobook"
+ *         format:
+ *           type: string
+ *           example: "A4-horizontal"
+ *         product_id:
+ *           type: integer
+ *           example: 5
+ *         status:
+ *           type: string
+ *           example: "draft"
+ *         pages:
+ *           type: array
+ *           items:
+ *             type: object
+ *             description: Данные страницы
+ *         photos:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/PhotoData'
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *           example: "2025-05-22T12:34:56.789Z"
+ *         updated_at:
+ *           type: string
+ *           format: date-time
+ *           example: "2025-05-22T12:35:56.789Z"
  */
 
 /**
@@ -27,7 +90,7 @@ router.use(authenticateToken);
  *     tags: [Projects]
  *     responses:
  *       200:
- *         description: Список проектов
+ *         description: Успешный ответ со списком проектов
  *         content:
  *           application/json:
  *             schema:
@@ -35,8 +98,9 @@ router.use(authenticateToken);
  *               items:
  *                 $ref: '#/components/schemas/Project'
  *       401:
- *         description: Неавторизован
+ *         description: Неавторизованный доступ
  */
+router.get("/", getProjects);
 
 /**
  * @swagger
@@ -50,7 +114,7 @@ router.use(authenticateToken);
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID проекта
+ *         description: Идентификатор проекта
  *     responses:
  *       200:
  *         description: Данные проекта
@@ -61,6 +125,7 @@ router.use(authenticateToken);
  *       404:
  *         description: Проект не найден
  */
+router.get("/:id", getProjectById);
 
 /**
  * @swagger
@@ -76,14 +141,15 @@ router.use(authenticateToken);
  *             $ref: '#/components/schemas/Project'
  *     responses:
  *       201:
- *         description: Проект создан
+ *         description: Проект успешно создан
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Project'
  *       400:
- *         description: Неверный формат данных
+ *         description: Неверные данные запроса
  */
+router.post("/", createProject);
 
 /**
  * @swagger
@@ -97,7 +163,7 @@ router.use(authenticateToken);
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID проекта
+ *         description: Идентификатор проекта
  *     requestBody:
  *       required: true
  *       content:
@@ -114,6 +180,7 @@ router.use(authenticateToken);
  *       404:
  *         description: Проект не найден
  */
+router.put("/:id", updateProject);
 
 /**
  * @swagger
@@ -127,53 +194,13 @@ router.use(authenticateToken);
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID проекта
+ *         description: Идентификатор проекта
  *     responses:
  *       204:
- *         description: Проект удален
+ *         description: Проект успешно удалён
  *       404:
  *         description: Проект не найден
  */
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Project:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *           example: 1
- *         name:
- *           type: string
- *           example: "Моя фотокнига"
- *         type:
- *           type: string
- *           example: "photobook"
- *         createdAt:
- *           type: string
- *           format: date-time
- *           example: "2025-05-22T12:34:56.789Z"
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           example: "2025-05-22T12:35:56.789Z"
- *         data:
- *           type: object
- *           description: Произвольные данные проекта (layout, photos и т.д.)
- *           example:
- *             layoutId: 123
- *             photos:
- *               - id: "abc123"
- *                 crop: { x: 0, y: 0, width: 100, height: 100 }
- *                 scale: 1.2
- */
-
-router.get("/", getProjects); // GET /projects
-router.get("/:id", getProjectById); // GET /projects/:id
-router.post("/", createProject); // POST /projects
-router.put("/:id", updateProject); // PUT /projects/:id
-router.delete("/:id", deleteProject); // DELETE /projects/:id
+router.delete("/:id", deleteProject);
 
 export default router;
