@@ -23,7 +23,7 @@ app.use(
       "http://localhost:3000",
       "http://127.0.0.1:3000",
     ], // Разрешаем только эти адреса
-    methods: ["GET", "POST"], // Разрешаем только нужные методы
+    methods: ["GET", "POST", "PUT", "DELETE"], // Разрешаем только нужные методы
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true, // Разрешённые заголовки
   })

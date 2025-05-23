@@ -57,7 +57,16 @@ export const createProject = async (req, res) => {
        VALUES 
         ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [userId, title, type, format, product_id, status, pages, photos]
+      [
+        userId,
+        title,
+        type,
+        format,
+        product_id,
+        status,
+        JSON.stringify(pages),
+        JSON.stringify(photos),
+      ]
     );
 
     res.status(201).json(result.rows[0]);
@@ -86,7 +95,17 @@ export const updateProject = async (req, res) => {
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $8 AND user_id = $9
        RETURNING *`,
-      [title, type, format, product_id, status, pages, photos, id, userId]
+      [
+        title,
+        type,
+        format,
+        product_id,
+        status,
+        JSON.stringify(pages),
+        JSON.stringify(photos),
+        id,
+        userId,
+      ]
     );
 
     if (result.rows.length === 0) {

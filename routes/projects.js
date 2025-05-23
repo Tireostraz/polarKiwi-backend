@@ -10,7 +10,7 @@ import {
 
 const router = express.Router();
 
-//router.use(authenticateToken);
+router.use(authenticateToken);
 
 /**
  * @swagger
