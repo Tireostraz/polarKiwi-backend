@@ -36,7 +36,7 @@ export const authenticateToken = async (req, res, next) => {
     next();
   } catch (error) {
     console.log(error);
-    res.status(403).json({ message: "Неверный или просроченный токен" });
+    res.status(401).json({ message: "Неверный или просроченный токен" });
   }
 };
 

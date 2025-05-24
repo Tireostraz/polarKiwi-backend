@@ -40,6 +40,7 @@ export const getProjectById = async (req, res) => {
 /* Создать новый проект */
 export const createProject = async (req, res) => {
   try {
+    const id = crypto.randomUUID();
     const userId = req.user.user_id;
     const {
       title,
@@ -53,11 +54,12 @@ export const createProject = async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO projects 
-        (user_id, title, type, format, product_id, status, pages, photos)
+        (id, user_id, title, type, format, product_id, status, pages, photos)
        VALUES 
-        ($1, $2, $3, $4, $5, $6, $7, $8)
+        ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
       [
+        id,
         userId,
         title,
         type,
