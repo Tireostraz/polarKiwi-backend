@@ -127,7 +127,7 @@ export const login = async (req, res) => {
       httpOnly: true,
       path: "/",
       secure: false, // СДЕЛАТЬ ПОТОМ true (Когда будет HTTPS) иначе не работает
-      sameSite: "None",
+      /* sameSite: "None", */
       /* sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None", */
       maxAge: rememberMe
         ? parseTimeToMs(process.env.JWT_EXPIRES_IN)
@@ -141,7 +141,7 @@ export const login = async (req, res) => {
         path: "/",
         //secure: process.env.NODE_ENV === "production" ? "true" : "false",
         secure: false, //TODO СДЕЛАТЬ ПОТОМ true (Когда будет HTTPS) иначе не работает
-        sameSite: "None",
+        /* sameSite: "None", */
         /* sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None", */
         maxAge: parseTimeToMs(process.env.JWT_REFRESH_EXPIRES_IN),
       });
