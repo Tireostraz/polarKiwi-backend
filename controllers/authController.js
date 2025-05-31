@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import pool from "../db/db.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import transporter from "../utils/mailer.js";
+
 import { parseTimeToMs } from "../utils/timeParser.js";
 
 dotenv.config();
@@ -40,6 +42,28 @@ export const register = async (req, res) => {
       [email, name, hashedPassword, userTypeId]
     );
 
+    // Отправка письма верификации
+    const emailToken = jwt.sign({ email }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    /* console.log("SMTP_USER:", process.env.SMTP_USER);
+    console.log("SMTP_PASS:", process.env.SMTP_PASS); */
+
+    const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${emailToken}`;
+
+    await transporter.sendMail({
+      from: '"My Company" <noreply@polarkiwi.ru>',
+      to: email,
+      subject: "Подтверждение регистрации",
+      html: `
+    <h3>Здравствуйте, ${name}!</h3>
+    <p>Пожалуйста, подтвердите ваш email, перейдя по ссылке ниже:</p>
+    <a href="${verificationLink}">${verificationLink}</a>
+    <p>Если вы не регистрировались — просто проигнорируйте это письмо.</p>
+  `,
+    });
+
     const payload = { id: result.rows[0].user_id, role: role };
 
     const accessToken = generateAccessToken(payload);
@@ -74,7 +98,7 @@ export const login = async (req, res) => {
     const { email, password, rememberMe } = req.body;
 
     const userResult = await pool.query(
-      `SELECT user_id, username, password, email, roles.name as role FROM users, roles WHERE user_type_id = roles.id AND email = $1`,
+      `SELECT user_id, username, password, email, roles.name as role, is_verified FROM users, roles WHERE user_type_id = roles.id AND email = $1`,
       [email]
     );
 
@@ -83,6 +107,10 @@ export const login = async (req, res) => {
     }
 
     const user = userResult.rows[0];
+
+    if (!user.is_verified) {
+      return res.status(403).json({ error: "Подтвердите email перед входом" });
+    }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
@@ -99,7 +127,8 @@ export const login = async (req, res) => {
       httpOnly: true,
       path: "/",
       secure: "false",
-      sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None",
+      sameSite: "None",
+      /* sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None", */
       maxAge: rememberMe
         ? parseTimeToMs(process.env.JWT_EXPIRES_IN)
         : undefined,
@@ -112,7 +141,8 @@ export const login = async (req, res) => {
         path: "/",
         //secure: process.env.NODE_ENV === "production" ? "true" : "false",
         secure: "false",
-        sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None",
+        sameSite: "None",
+        /* sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None", */
         maxAge: parseTimeToMs(process.env.JWT_REFRESH_EXPIRES_IN),
       });
       console.log("refresh cookie sent to user");
@@ -185,4 +215,21 @@ export const me = (req, res) => {
     email: req.user.email,
     role: req.user.role,
   });
+};
+
+export const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.query;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const email = decoded.email;
+
+    await pool.query(`UPDATE users SET is_verified = true WHERE email = $1`, [
+      email,
+    ]);
+
+    res.status(200).json({ message: "Email подтверждён успешно!" });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ message: "Невалидный или истёкший токен" });
+  }
 };

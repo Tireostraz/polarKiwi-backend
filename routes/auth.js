@@ -6,6 +6,7 @@ import {
   refreshToken,
   logout,
   me,
+  verifyEmail,
 } from "../controllers/authController.js";
 
 const router = express.Router();
@@ -197,5 +198,35 @@ router.get("/logout", logout);
  *         description: Пользователь не авторизован (токен отсутствует или недействителен)
  */
 router.get("/me", authenticateToken, me);
+
+/**
+ * @swagger
+ * /auth/verify-email:
+ *   get:
+ *     summary: Подтверждение email-адреса
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Токен подтверждения email
+ *     responses:
+ *       200:
+ *         description: Email успешно подтверждён
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Email подтверждён успешно!
+ *       400:
+ *         description: Невалидный или истёкший токен
+ */
+
+router.get("/verify-email", verifyEmail);
 
 export default router;
