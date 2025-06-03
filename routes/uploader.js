@@ -107,6 +107,6 @@ router.post(
 router.get("/images", authenticateToken, getUserImages);
 
 /* ---------- GET /images/:userId/:file ---------- */
-router.get("/images/:userId/:file", authenticateToken, sendImage);
+router.get("/images/:userId/:projectId/:file", authenticateToken, sendImage);
 
 export default router;

@@ -7,7 +7,11 @@ import mime from "mime-types";
 export const upload = multer({
   storage: multer.diskStorage({
     destination(req, _file, cb) {
-      const dir = path.join("uploads", `${req.user.user_id}`, "original");
+      const userId = req.user.user_id;
+      const projectId = req.query.projectId;
+      if (!projectId) return cb(new Error("projectId required"));
+
+      const dir = path.join("uploads", `${userId}`, `${projectId}`, "original");
       fs.mkdirSync(dir, { recursive: true });
       cb(null, dir);
     },
