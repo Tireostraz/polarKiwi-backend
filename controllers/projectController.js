@@ -1,4 +1,6 @@
 import pool from "../db/db.js";
+import fs from "fs/promises";
+import path from "path";
 
 /* Получить все проекты пользователя */
 export const getProjects = async (req, res) => {
@@ -144,5 +146,94 @@ export const deleteProject = async (req, res) => {
   } catch (err) {
     console.error("Error deleting project:", err);
     res.status(500).json({ error: "Ошибка при удалении проекта" });
+  }
+};
+
+// Дублировать проект
+export const duplicateProject = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const { id: oldProjectId } = req.params;
+
+    const result = await pool.query(
+      "SELECT * FROM projects WHERE id = $1 AND user_id = $2",
+      [oldProjectId, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Проект не найден или нет доступа" });
+    }
+
+    const original = result.rows[0];
+
+    const newProjectId = crypto.randomUUID();
+    const newTitle = original.title + " (копия)";
+    const newPages = (original.pages || "[]").map((page) => ({
+      ...page,
+      id: crypto.randomUUID(),
+    }));
+
+    const copyDir = async (from, to) => {
+      try {
+        await fs.mkdir(to, { recursive: true });
+        const files = await fs.readdir(from);
+        for (const file of files) {
+          await fs.copyFile(path.join(from, file), path.join(to, file));
+        }
+      } catch (err) {
+        if (err.code !== "ENOENT") throw err;
+      }
+    };
+
+    const baseUploads = path.resolve("uploads", `${userId}`);
+    const oldOriginal = path.join(baseUploads, oldProjectId, "original");
+    const newOriginal = path.join(baseUploads, newProjectId, "original");
+    const oldProcessed = path.join(baseUploads, oldProjectId, "processed");
+    const newProcessed = path.join(baseUploads, newProjectId, "processed");
+
+    await copyDir(oldOriginal, newOriginal);
+    await copyDir(oldProcessed, newProcessed);
+
+    // Обновляем ссылки в photos
+    const baseUrl =
+      process.env.NODE_ENV === "production"
+        ? "/api/images"
+        : "http://127.0.0.1:3001/images";
+
+    const newPhotos = (original.photos || "[]").map((photo) => {
+      const filename = photo.url.split("/").pop();
+      return {
+        ...photo,
+        id: crypto.randomUUID(),
+        url: `${baseUrl}/${userId}/${newProjectId}/${filename}`,
+        uploadedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    });
+
+    const insertResult = await pool.query(
+      `INSERT INTO projects 
+      (id, user_id, title, type, format, product_id, status, pages, photos) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+      RETURNING *`,
+      [
+        newProjectId,
+        userId,
+        newTitle,
+        original.type,
+        original.format,
+        original.product_id,
+        "draft",
+        JSON.stringify(newPages),
+        JSON.stringify(newPhotos),
+      ]
+    );
+
+    res.status(201).json(insertResult.rows[0]);
+  } catch (err) {
+    console.error("Ошибка при дублировании проекта", err);
+    res.status(500).json({ error: "Ошибка при дублировании проекта" });
   }
 };

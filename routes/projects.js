@@ -6,6 +6,7 @@ import {
   createProject,
   updateProject,
   deleteProject,
+  duplicateProject,
 } from "../controllers/projectController.js";
 
 const router = express.Router();
@@ -202,5 +203,30 @@ router.put("/:id", updateProject);
  *         description: Проект не найден
  */
 router.delete("/:id", deleteProject);
+
+/**
+ * @swagger
+ * /projects/{id}/duplicate:
+ *   post:
+ *     summary: Продублировать проект
+ *     tags: [Projects]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID проекта для дублирования
+ *     responses:
+ *       201:
+ *         description: Дубликат проекта успешно создан
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Project'
+ *       404:
+ *         description: Проект не найден
+ */
+router.post("/:id/duplicate", duplicateProject);
 
 export default router;
