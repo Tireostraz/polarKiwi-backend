@@ -1,6 +1,7 @@
 import pool from "../db/db.js";
 import fs from "fs/promises";
 import path from "path";
+import { text } from "stream/consumers";
 
 /* Получить все проекты пользователя */
 export const getProjects = async (req, res) => {
@@ -49,10 +50,17 @@ export const createProject = async (req, res) => {
       type,
       format,
       product_id,
+      pages_quantity,
       status = "draft",
-      pages = [],
       photos = [],
     } = req.body;
+
+    const pages = Array.from({ length: pages_quantity }, () => ({
+      id: crypto.randomUUID(),
+      layout: null,
+      elements: [],
+      textBlocks: [],
+    }));
 
     const result = await pool.query(
       `INSERT INTO projects 
@@ -129,17 +137,25 @@ export const updateProject = async (req, res) => {
 export const deleteProject = async (req, res) => {
   try {
     const userId = req.user.user_id;
-    const { id } = req.params;
+    const { id: projectId } = req.params;
 
     const result = await pool.query(
       "DELETE FROM projects WHERE id = $1 AND user_id = $2 RETURNING *",
-      [id, userId]
+      [projectId, userId]
     );
 
     if (result.rows.length === 0) {
       return res
         .status(404)
         .json({ message: "Проект не найден или нет доступа" });
+    }
+
+    const projectDir = path.resolve("uploads", `${userId}`, projectId);
+
+    try {
+      await fs.rm(projectDir, { recursive: true, force: true });
+    } catch (err) {
+      console.warn("Ошибка удаления проекта", err);
     }
 
     res.status(204).send();

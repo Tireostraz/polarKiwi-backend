@@ -81,8 +81,6 @@ export const sendImage = (req, res) => {
   const { userId, projectId, file } = req.params;
   if (String(req.user.user_id) !== userId) return res.sendStatus(403);
 
-  console.log("image got");
-
   const filePath = path.resolve(
     "uploads",
     userId,
