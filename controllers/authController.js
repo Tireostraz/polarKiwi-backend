@@ -37,11 +37,6 @@ export const register = async (req, res) => {
     const userTypeId = req.body.user_type_id || 1;
     const role = "user";
 
-    const result = await pool.query(
-      `INSERT INTO users (email, username, password, user_type_id) VALUES ($1, $2, $3, $4) RETURNING user_id`,
-      [email, name, hashedPassword, userTypeId]
-    );
-
     // Отправка письма верификации
     const emailToken = jwt.sign({ email }, process.env.JWT_SECRET, {
       expiresIn: "1d",
@@ -50,7 +45,7 @@ export const register = async (req, res) => {
     /* console.log("SMTP_USER:", process.env.SMTP_USER);
     console.log("SMTP_PASS:", process.env.SMTP_PASS); */
 
-    const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${emailToken}`;
+    /* const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${emailToken}`;
 
     await transporter.sendMail({
       from: '"My Company" <noreply@polarkiwi.ru>',
@@ -62,7 +57,12 @@ export const register = async (req, res) => {
     <a href="${verificationLink}">${verificationLink}</a>
     <p>Если вы не регистрировались — просто проигнорируйте это письмо.</p>
   `,
-    });
+    }); */
+
+    const result = await pool.query(
+      `INSERT INTO users (email, username, password, user_type_id) VALUES ($1, $2, $3, $4) RETURNING user_id`,
+      [email, name, hashedPassword, userTypeId]
+    );
 
     const payload = { id: result.rows[0].user_id, role: role };
 
