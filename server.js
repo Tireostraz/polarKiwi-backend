@@ -24,8 +24,8 @@ app.use(
       "http://127.0.0.1:3000",
     ], // Разрешаем только эти адреса
     methods: ["GET", "POST", "PUT", "DELETE"], // Разрешаем только нужные методы
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true, // Разрешённые заголовки
+    allowedHeaders: ["Content-Type", "Authorization", "X-Guest-Id"], // Разрешённые заголовки
+    credentials: true,
   })
 );
 

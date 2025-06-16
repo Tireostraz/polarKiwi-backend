@@ -5,7 +5,7 @@ import {
   login,
   refreshToken,
   logout,
-  me,
+  check,
   verifyEmail,
 } from "../controllers/authController.js";
 
@@ -168,7 +168,7 @@ router.get("/logout", logout);
 
 /**
  * @swagger
- * /auth/me:
+ * /auth/check:
  *   get:
  *     summary: Получение информации о текущем пользователе
  *     tags: [Auth]
@@ -197,7 +197,7 @@ router.get("/logout", logout);
  *       401:
  *         description: Пользователь не авторизован (токен отсутствует или недействителен)
  */
-router.get("/me", authenticateToken, me);
+router.get("/check", authenticateToken, check);
 
 /**
  * @swagger

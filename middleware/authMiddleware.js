@@ -5,21 +5,16 @@ import { getUserById } from "../services/userServices.js";
 dotenv.config();
 
 export const authenticateToken = async (req, res, next) => {
-  let token;
+  const token = req.cookies.accessToken;
+  const guestId = req.headers["x-guest-id"];
 
-  // Проверяем наличие токена в заголовке Authorization
-
-  //TODO убрать эту часть, токен приходит только в куки
-  const authHeader = req.header("Authorization");
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    token = authHeader.split(" ")[1];
+  // Гостевой доступ без токена
+  if (guestId && !token) {
+    req.guestId = guestId;
+    return next();
   }
 
-  // Если в заголовке нет токена, пытаемся получить его из cookies
-  if (!token && req.cookies.accessToken) {
-    token = req.cookies.accessToken;
-  }
-
+  //Если нет ни токена ни гостевого Id
   if (!token) {
     return res.status(401).json({ message: "Токен отсутствует" });
   }

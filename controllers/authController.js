@@ -108,6 +108,15 @@ export const login = async (req, res) => {
 
     const user = userResult.rows[0];
 
+    const sendUser = {
+      id: user.user_id,
+      name: user.username,
+      email: user.email,
+      role: user.role,
+    };
+
+    console.log(sendUser);
+
     if (!user.is_verified) {
       return res.status(403).json({ error: "Подтвердите email перед входом" });
     }
@@ -148,7 +157,7 @@ export const login = async (req, res) => {
       console.log("refresh cookie sent to user");
     }
 
-    res.status(200).json({ message: "Вход выполнен успешно" });
+    res.status(200).json({ message: "Вход выполнен успешно", user: sendUser });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Ошибка сервера", detail: err.detail });
@@ -204,12 +213,12 @@ export const logout = (req, res) => {
   res.status(200).json({ message: "Выход выполнен успешно" });
 };
 
-export const me = (req, res) => {
+export const check = (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: "Неавторизированный запрос" });
   }
 
-  res.json({
+  res.status(200).json({
     id: req.user.user_id,
     name: req.user.username,
     email: req.user.email,

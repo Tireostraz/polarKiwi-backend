@@ -6,12 +6,14 @@ import { text } from "stream/consumers";
 /* Получить все проекты пользователя */
 export const getProjects = async (req, res) => {
   try {
-    const userId = req.user.user_id;
+    const userId = req.user?.user_id || null;
+    const guestId = req.guestId || null;
+
     const result = await pool.query(
-      "SELECT * FROM projects WHERE user_id = $1 ORDER BY updated_at DESC",
-      [userId]
+      `SELECT * FROM projects WHERE (user_id = $1 OR guest_id = $2) ORDER BY updated_at DESC`,
+      [userId, guestId]
     );
-    res.json(result.rows);
+    res.status(200).json(result.rows);
   } catch (err) {
     console.error("Error fetching projects:", err);
     res.status(500).json({ error: "Ошибка при получении проектов" });
@@ -21,12 +23,13 @@ export const getProjects = async (req, res) => {
 /* Получить один проект */
 export const getProjectById = async (req, res) => {
   try {
-    const userId = req.user.user_id;
+    const userId = req.user?.user_id || null;
+    const guestId = req.guestId || null;
     const { id } = req.params;
 
     const result = await pool.query(
-      "SELECT * FROM projects WHERE id = $1 AND user_id = $2",
-      [id, userId]
+      "SELECT * FROM projects WHERE id = $1 AND (user_id = $2 OR guest_id = $3)",
+      [id, userId, guestId]
     );
 
     if (result.rows.length === 0) {
@@ -44,7 +47,9 @@ export const getProjectById = async (req, res) => {
 export const createProject = async (req, res) => {
   try {
     const id = crypto.randomUUID();
-    const userId = req.user.user_id;
+    const userId = req.user?.user_id || null;
+    const guestId = req.guestId || null;
+
     const {
       title,
       type,
@@ -64,13 +69,14 @@ export const createProject = async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO projects 
-        (id, user_id, title, type, format, product_id, status, pages, photos)
+        (id, user_id, guest_id, title, type, format, product_id, status, pages, photos)
        VALUES 
-        ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
       [
         id,
         userId,
+        guestId,
         title,
         type,
         format,
@@ -91,7 +97,9 @@ export const createProject = async (req, res) => {
 /* Обновить проект */
 export const updateProject = async (req, res) => {
   try {
-    const userId = req.user.user_id;
+    const userId = req.user?.user_id || null;
+    const guestId = req.guestId || null;
+
     const { id } = req.params;
     const { title, type, format, product_id, status, pages, photos } = req.body;
 
@@ -105,7 +113,7 @@ export const updateProject = async (req, res) => {
            pages = $6,
            photos = $7,
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $8 AND user_id = $9
+       WHERE id = $8 AND (user_id = $9 OR guest_id = $10)
        RETURNING *`,
       [
         title,
@@ -117,6 +125,7 @@ export const updateProject = async (req, res) => {
         JSON.stringify(photos),
         id,
         userId,
+        guestId,
       ]
     );
 
@@ -136,12 +145,14 @@ export const updateProject = async (req, res) => {
 /* Удалить проект */
 export const deleteProject = async (req, res) => {
   try {
-    const userId = req.user.user_id;
+    const userId = req.user?.user_id || null;
+    const guestId = req.guestId || null;
+
     const { id: projectId } = req.params;
 
     const result = await pool.query(
-      "DELETE FROM projects WHERE id = $1 AND user_id = $2 RETURNING *",
-      [projectId, userId]
+      "DELETE FROM projects WHERE id = $1 AND (user_id = $2 OR guest_id = $3) RETURNING *",
+      [projectId, userId, guestId]
     );
 
     if (result.rows.length === 0) {
@@ -150,7 +161,9 @@ export const deleteProject = async (req, res) => {
         .json({ message: "Проект не найден или нет доступа" });
     }
 
-    const projectDir = path.resolve("uploads", `${userId}`, projectId);
+    const ownerId = userId || guestId;
+
+    const projectDir = path.resolve("uploads", `${ownerId}`, projectId);
 
     try {
       await fs.rm(projectDir, { recursive: true, force: true });
@@ -168,12 +181,13 @@ export const deleteProject = async (req, res) => {
 // Дублировать проект
 export const duplicateProject = async (req, res) => {
   try {
-    const userId = req.user.user_id;
+    const userId = req.user?.user_id || null;
+    const guestId = req.guestId || null;
     const { id: oldProjectId } = req.params;
 
     const result = await pool.query(
-      "SELECT * FROM projects WHERE id = $1 AND user_id = $2",
-      [oldProjectId, userId]
+      "SELECT * FROM projects WHERE id = $1 AND (user_id = $2 OR guest_id = $3)",
+      [oldProjectId, userId, guestId]
     );
 
     if (result.rows.length === 0) {
@@ -203,7 +217,8 @@ export const duplicateProject = async (req, res) => {
       }
     };
 
-    const baseUploads = path.resolve("uploads", `${userId}`);
+    const ownerId = userId || guestId;
+    const baseUploads = path.resolve("uploads", `${ownerId}`);
     const oldOriginal = path.join(baseUploads, oldProjectId, "original");
     const newOriginal = path.join(baseUploads, newProjectId, "original");
     const oldProcessed = path.join(baseUploads, oldProjectId, "processed");
@@ -223,7 +238,7 @@ export const duplicateProject = async (req, res) => {
       return {
         ...photo,
         id: crypto.randomUUID(),
-        url: `${baseUrl}/${userId}/${newProjectId}/${filename}`,
+        url: `${baseUrl}/${ownerId}/${newProjectId}/${filename}`,
         uploadedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -231,12 +246,13 @@ export const duplicateProject = async (req, res) => {
 
     const insertResult = await pool.query(
       `INSERT INTO projects 
-      (id, user_id, title, type, format, product_id, status, pages, photos) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+      (id, user_id, guest_id, title, type, format, product_id, status, pages, photos) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
       RETURNING *`,
       [
         newProjectId,
         userId,
+        guestId,
         newTitle,
         original.type,
         original.format,

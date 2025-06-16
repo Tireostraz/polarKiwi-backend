@@ -10,14 +10,20 @@ export const uploadImage = async (req, res) => {
   if (!req.file) return res.status(400).json({ message: "Файл не загружен" });
 
   try {
-    const userId = req.user.user_id;
+    const userId = req.user?.user_id || null;
+    const guestId = req.guestId || null;
+
     const projectId = req.query.projectId;
     if (!projectId)
       return res.status(400).json({ message: "projectId required" });
 
+    const ownerId = userId || guestId;
+    if (!ownerId)
+      return res.status(400).json({ message: "userId or guestId required" });
+
     const processedDir = path.join(
       "uploads",
-      `${userId}`,
+      `${ownerId}`,
       `${projectId}`,
       "processed"
     );
@@ -30,7 +36,7 @@ export const uploadImage = async (req, res) => {
 
     const outName = req.file.filename.replace(/\.\w+$/, ".jpg");
     const outPath = path.join(processedDir, outName);
-    const fileUrl = `${baseUrl}/${userId}/${projectId}/${outName}`;
+    const fileUrl = `${baseUrl}/${ownerId}/${projectId}/${outName}`;
 
     // конвертация/нормализация → JPEG
     const { width, height } = await sharp(req.file.path)
@@ -52,10 +58,16 @@ export const uploadImage = async (req, res) => {
  * возможно не работает, надо проверять (в данный момент запрос картинок не нужен - всё идёт из projects)
  */
 export const getUserImages = async (req, res) => {
-  const userId = req.user.user_id;
-  const projectId = req.query.projectId;
+  const userId = req.user?.user_id || null;
+  const guestId = req.guestId || null;
 
-  const dir = path.join("uploads", `${userId}`, `${projectId}`, "processed");
+  const projectId = req.query.projectId;
+  const ownerId = userId || guestId;
+
+  if (!ownerId || !projectId)
+    return res.status(400).json({ message: "projectId required" });
+
+  const dir = path.join("uploads", `${ownerId}`, `${projectId}`, "processed");
   try {
     const files = await fs.readdir(dir);
     const baseUrl =
@@ -79,16 +91,45 @@ export const getUserImages = async (req, res) => {
  */
 export const sendImage = (req, res) => {
   const { userId, projectId, file } = req.params;
-  if (String(req.user.user_id) !== userId) return res.sendStatus(403);
+  const token = req.cookies.accessToken;
+  const guestId = req.headers["x-guest-id"];
 
-  const filePath = path.resolve(
-    "uploads",
-    userId,
-    projectId,
-    "processed",
-    file
-  );
-  res.sendFile(filePath, (err) => {
-    if (err) res.sendStatus(404);
-  });
+  // Если userId — это guestId (UUID) и совпадает с заголовком, пускаем
+  if (guestId && guestId === userId) {
+    const filePath = path.resolve(
+      "uploads",
+      userId,
+      projectId,
+      "processed",
+      file
+    );
+    return res.sendFile(filePath, (err) => {
+      if (err) res.sendStatus(404);
+    });
+  }
+
+  // Если нет токена и не совпадает guestId — запрещаем
+  if (!token) {
+    return res.status(401).json({ message: "Токен отсутствует" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.id !== userId) {
+      return res.sendStatus(403);
+    }
+
+    const filePath = path.resolve(
+      "uploads",
+      userId,
+      projectId,
+      "processed",
+      file
+    );
+    return res.sendFile(filePath, (err) => {
+      if (err) res.sendStatus(404);
+    });
+  } catch (err) {
+    return res.status(401).json({ message: "Неверный или просроченный токен" });
+  }
 };
