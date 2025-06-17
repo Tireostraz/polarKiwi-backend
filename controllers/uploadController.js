@@ -89,6 +89,7 @@ export const getUserImages = async (req, res) => {
  * GET /images/:userId/:file  (используем в uploadRouter)
  * здесь отдаем пользователю изображение
  */
+/*
 export const sendImage = (req, res) => {
   const { userId, projectId, file } = req.params;
   const token = req.cookies.accessToken;
@@ -132,4 +133,19 @@ export const sendImage = (req, res) => {
   } catch (err) {
     return res.status(401).json({ message: "Неверный или просроченный токен" });
   }
+};
+*/
+
+export const sendImage = (req, res) => {
+  const { userId, projectId, file } = req.params;
+  const filePath = path.resolve(
+    "uploads",
+    userId,
+    projectId,
+    "processed",
+    file
+  );
+  res.sendFile(filePath, (err) => {
+    if (err) res.sendStatus(404);
+  });
 };
