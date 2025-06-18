@@ -23,6 +23,7 @@ export const uploadImage = async (req, res) => {
 
     const processedDir = path.join(
       "uploads",
+      `${userId ? "private" : "public"}`,
       `${ownerId}`,
       `${projectId}`,
       "processed"
@@ -36,7 +37,9 @@ export const uploadImage = async (req, res) => {
 
     const outName = req.file.filename.replace(/\.\w+$/, ".jpg");
     const outPath = path.join(processedDir, outName);
-    const fileUrl = `${baseUrl}/${ownerId}/${projectId}/${outName}`;
+    const fileUrl = `${baseUrl}/${
+      userId ? "private" : "public"
+    }/${ownerId}/${projectId}/${outName}`;
 
     // конвертация/нормализация → JPEG
     const { width, height } = await sharp(req.file.path)
@@ -67,7 +70,13 @@ export const getUserImages = async (req, res) => {
   if (!ownerId || !projectId)
     return res.status(400).json({ message: "projectId required" });
 
-  const dir = path.join("uploads", `${ownerId}`, `${projectId}`, "processed");
+  const dir = path.join(
+    "uploads",
+    `${userId ? "private" : "public"}`,
+    `${ownerId}`,
+    `${projectId}`,
+    "processed"
+  );
   try {
     const files = await fs.readdir(dir);
     const baseUrl =
@@ -77,7 +86,9 @@ export const getUserImages = async (req, res) => {
 
     const list = files.map((f) => ({
       filename: f,
-      url: `${baseUrl}/${userId}/${projectId}/${f}`,
+      url: `${baseUrl}/${
+        userId ? "private" : "public"
+      }/${ownerId}/${projectId}/${f}`,
     }));
     res.json(list);
   } catch {
@@ -136,15 +147,42 @@ export const sendImage = (req, res) => {
 };
 */
 
-export const sendImage = (req, res) => {
-  const { userId, projectId, file } = req.params;
+export const sendPublicImage = (req, res) => {
+  const { guestId, projectId, file } = req.params;
+
   const filePath = path.resolve(
     "uploads",
+    "public",
+    guestId,
+    projectId,
+    "processed",
+    file
+  );
+
+  if (!filePath.startsWith(path.resolve("uploads"))) {
+    res.status(403).json({ error: "Недопустимый путь" });
+  }
+  res.status(200).sendFile(filePath, (err) => {
+    if (err) res.sendStatus(404);
+  });
+};
+
+export const sendImage = (req, res) => {
+  const { userId, projectId, file } = req.params;
+
+  const filePath = path.resolve(
+    "uploads",
+    "private",
     userId,
     projectId,
     "processed",
     file
   );
+
+  if (!filePath.startsWith(path.resolve("uploads"))) {
+    res.status(403).json({ error: "Недопустимый путь" });
+  }
+
   res.sendFile(filePath, (err) => {
     if (err) res.sendStatus(404);
   });

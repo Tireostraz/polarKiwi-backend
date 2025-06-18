@@ -16,6 +16,7 @@ export const upload = multer({
       const ownerId = userId || guestId;
       const dir = path.join(
         "uploads",
+        `${guestId ? "public" : "private"}`,
         `${ownerId}`,
         `${projectId}`,
         "original"

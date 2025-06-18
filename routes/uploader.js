@@ -4,6 +4,7 @@ import { upload } from "../middleware/uploadMiddleware.js";
 import {
   uploadImage,
   getUserImages,
+  sendPublicImage,
   sendImage,
 } from "../controllers/uploadController.js";
 
@@ -106,7 +107,14 @@ router.post(
 /* ---------- GET /uploader/images ---------- */
 router.get("/images", authenticateToken, getUserImages);
 
-/* ---------- GET /images/:userId/:file ---------- */
-router.get("/images/:userId/:projectId/:file", sendImage);
+/* ---------- GET /images/public/:guestId/:file ---------- */
+router.get("/images/public/:guestId/:projectId/:file", sendPublicImage);
+
+/* ---------- GET /images/private/:userId/:file ---------- */
+router.get(
+  "/images/private/:userId/:projectId/:file",
+  authenticateToken,
+  sendImage
+);
 
 export default router;
