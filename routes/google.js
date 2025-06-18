@@ -13,7 +13,7 @@ const router = express.Router();
 const FRONTEND_URL =
   process.env.NODE_ENV === "dev"
     ? "http://127.0.0.1:3000"
-    : "https://polaroidkiwi.ru";
+    : "https://polaroidkiwi.ru/api";
 
 passport.use(
   new GoogleStrategy(
@@ -87,14 +87,30 @@ router.get(
         sameSite: "Lax",
         maxAge: parseTimeToMs(process.env.JWT_REFRESH_EXPIRES_IN),
       }).send(`
-        <html>
-          <body>
-            <script>
-              window.opener.postMessage("google-auth-success", "*");
-              window.close();
-            </script>
-          </body>
-        </html>
+        <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Закрытие окна авторизации</title>
+        </head>
+        <body>
+          <script>
+        console.log("Popup: trying to send message to opener");
+        if (window.opener) {
+          console.log("Popup: opener exists, sending message");
+          window.opener.postMessage({
+            type: 'google-auth-success',
+            tokens: {
+              accessToken: '${accessToken}',
+              refreshToken: '${refreshToken}'
+            }
+          }, '${FRONTEND_URL}');
+        } else {
+          console.log("Popup: opener is null");
+        }
+            setTimeout(window.close, 5000)
+          </script>
+        </body>
+      </html>
       `);
   }
 );
