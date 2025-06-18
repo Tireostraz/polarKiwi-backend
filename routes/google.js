@@ -79,6 +79,7 @@ router.get(
       expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
     });
 
+    // Устанавливаем куки и делаем redirect на фронтенд
     res
       .cookie("accessToken", accessToken, {
         httpOnly: true,
@@ -91,32 +92,8 @@ router.get(
         secure: process.env.NODE_ENV === "production",
         sameSite: "Lax",
         maxAge: parseTimeToMs(process.env.JWT_REFRESH_EXPIRES_IN),
-      }).send(`
-        <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Закрытие окна авторизации</title>
-        </head>
-        <body>
-          <script>
-        console.log("Popup: trying to send message to opener");
-        if (window.opener) {
-          console.log("Popup: opener exists, sending message");
-          window.opener.postMessage({
-            type: 'google-auth-success',
-            tokens: {
-              accessToken: '${accessToken}',
-              refreshToken: '${refreshToken}'
-            }
-          }, '${FRONTEND_URL}');
-        } else {
-          console.log("Popup: opener is null");
-        }
-            setTimeout(window.close, 5000)
-          </script>
-        </body>
-      </html>
-      `);
+      })
+      .redirect(FRONTEND_URL); // Просто делаем redirect на главную
   }
 );
 export default router;
