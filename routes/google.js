@@ -15,17 +15,17 @@ const FRONTEND_URL =
     ? "http://127.0.0.1:3000"
     : "https://polarkiwi.ru/api";
 
-const CALLBACK_URL =
+/* const CALLBACK_URL =
   process.env.NODE_ENV === "dev"
     ? "/auth/google/callback"
-    : "/api/auth/google/callback";
+    : "https://polarkiwi.ru/api/auth/google/callback"; */
 
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: CALLBACK_URL,
+      callbackURL: process.env.GOOGLE_CLIENT_CALLBACK,
     },
     async (_accessToken, _refreshToken, profile, done) => {
       try {
