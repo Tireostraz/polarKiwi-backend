@@ -13,7 +13,7 @@ const router = express.Router();
 const FRONTEND_URL =
   process.env.NODE_ENV === "dev"
     ? "http://127.0.0.1:3000"
-    : "https://polaroidkiwi.ru/api";
+    : "https://polarkiwi.ru/api";
 
 passport.use(
   new GoogleStrategy(
