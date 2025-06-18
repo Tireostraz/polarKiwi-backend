@@ -13,7 +13,7 @@ const router = express.Router();
 const FRONTEND_URL =
   process.env.NODE_ENV === "dev"
     ? "http://127.0.0.1:3000"
-    : "https://polarkiwi.ru/api";
+    : "https://polarkiwi.ru";
 
 /* const CALLBACK_URL =
   process.env.NODE_ENV === "dev"
