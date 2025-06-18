@@ -6,6 +6,7 @@ import productRoutes from "./routes/products.js";
 import layoutRoutes from "./routes/layouts.js";
 import uploadRoutes from "./routes/uploader.js";
 import projectRoutes from "./routes/projects.js";
+import googleAuthRoutes from "./routes/google.js";
 
 import swaggerDocs from "./utils/swagger.js";
 import cookieParser from "cookie-parser";
@@ -26,12 +27,14 @@ app.use(
     methods: ["GET", "POST", "PUT", "DELETE"], // Разрешаем только нужные методы
     allowedHeaders: ["Content-Type", "Authorization", "X-Guest-Id"], // Разрешённые заголовки
     credentials: true,
+    exposedHeaders: ["set-cookie"],
   })
 );
 
 app.use(cookieParser());
 app.use(express.json()); // Для работы с JSON
 
+app.use("/auth", googleAuthRoutes);
 app.use("/auth", authRoutes);
 app.use("/admin", adminRoutes);
 app.use("/products", productRoutes);
