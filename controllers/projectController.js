@@ -1,7 +1,6 @@
 import pool from "../db/db.js";
 import fs from "fs/promises";
 import path from "path";
-import { text } from "stream/consumers";
 
 /* Получить все проекты пользователя */
 export const getProjects = async (req, res) => {
@@ -14,6 +13,48 @@ export const getProjects = async (req, res) => {
       [userId, guestId]
     );
     res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("Error fetching projects:", err);
+    res.status(500).json({ error: "Ошибка при получении проектов" });
+  }
+};
+
+/* Получить id всех проектов в работе/в корзине*/
+export const getProjectsIds = async (req, res) => {
+  try {
+    const userId = req.user?.user_id || null;
+    const guestId = req.guestId || null;
+
+    let resultInCart, resultDraft;
+
+    if (userId) {
+      resultInCart = await pool.query(
+        `SELECT id, quantity FROM projects WHERE user_id = $1 AND status = 'in_cart' ORDER BY updated_at DESC`,
+        [userId]
+      );
+      resultDraft = await pool.query(
+        `SELECT id, quantity FROM projects WHERE user_id = $1 AND status = 'draft' ORDER BY updated_at DESC`,
+        [userId]
+      );
+    } else if (guestId) {
+      resultInCart = await pool.query(
+        `SELECT id, quantity FROM projects WHERE guest_id = $1 AND status = 'in_cart' ORDER BY updated_at DESC`,
+        [guestId]
+      );
+      resultDraft = await pool.query(
+        `SELECT id, quantity FROM projects WHERE guest_id = $1 AND status = 'draft' ORDER BY updated_at DESC`,
+        [guestId]
+      );
+    } else {
+      return res.status(401).json({ error: "Не найден userId или guestId" });
+    }
+
+    res.status(200).json({
+      response: {
+        cart_projects: resultInCart.rows,
+        draft_projects: resultDraft.rows,
+      },
+    });
   } catch (err) {
     console.error("Error fetching projects:", err);
     res.status(500).json({ error: "Ошибка при получении проектов" });

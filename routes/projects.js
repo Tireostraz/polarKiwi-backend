@@ -2,6 +2,7 @@ import express from "express";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import {
   getProjects,
+  getProjectsIds,
   getProjectById,
   createProject,
   updateProject,
@@ -102,6 +103,72 @@ router.use(authenticateToken);
  *         description: Неавторизованный доступ
  */
 router.get("/", getProjects);
+
+/**
+ * @swagger
+ * /projects/ids:
+ *   get:
+ *     summary: Получить идентификаторы проектов в корзине и черновиках
+ *     tags: [Projects]
+ *     description: >
+ *       Возвращает списки идентификаторов проектов пользователя или гостя с их количеством.
+ *       Группировка производится по статусу: `in_cart` и `draft`.
+ *     responses:
+ *       200:
+ *         description: Успешный ответ с идентификаторами проектов
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 response:
+ *                   type: object
+ *                   properties:
+ *                     cart_projects:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                             example: 94918827
+ *                           quantity:
+ *                             type: integer
+ *                             example: 2
+ *                     draft_projects:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                             example: 95137788
+ *                           quantity:
+ *                             type: integer
+ *                             example: 1
+ *       401:
+ *         description: Неавторизованный доступ — не найден userId или guestId
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Не найден userId или guestId
+ *       500:
+ *         description: Ошибка сервера при получении проектов
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Ошибка при получении проектов
+ */
+
+router.get("/ids", getProjectsIds);
 
 /**
  * @swagger
