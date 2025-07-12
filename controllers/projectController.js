@@ -1,6 +1,9 @@
+import { response } from "express";
 import pool from "../db/db.js";
 import fs from "fs/promises";
 import path from "path";
+import { title } from "process";
+import { subscribe } from "diagnostics_channel";
 
 /* Получить все проекты пользователя */
 export const getProjects = async (req, res) => {
@@ -58,6 +61,43 @@ export const getProjectsIds = async (req, res) => {
   } catch (err) {
     console.error("Error fetching projects:", err);
     res.status(500).json({ error: "Ошибка при получении проектов" });
+  }
+};
+
+//Получить все черновики
+export const draftProjects = async (req, res) => {
+  try {
+    const userId = req.user.user_id || null;
+    const guestId = req.guestId || null;
+
+    const result = await pool.query(
+      "SELECT p.*, pr.slug as product_slug, pr.price as product_price FROM projects p LEFT JOIN products pr ON p.product_id = pr.id WHERE (user_id = $1 OR guest_id = $2)",
+      [userId, guestId]
+    );
+    const resultProduct = await pool.query("");
+
+    const formatedDrafts = result.rows.map((project) => {
+      return {
+        expired_at: project.expired_at,
+        project: {
+          id: project.id,
+          title: project.title,
+          subtitle: project.subtitle,
+          image_url: project.image_url,
+          //total: {для цены. добавить потом. "currency_code_3": "USD", "cents": 6500} пока будет в product,
+          //is_in_cart: false, аналог - статус
+          status: project.status,
+          quantity: project.quantity,
+          can_be_reordered: project.can_be_reordered,
+          created_at: project.created_at,
+          updated_at: project.updated_at,
+          product: { slug: project.product_slug, price: project.product_price },
+        },
+      };
+    });
+    res.status(200).json({ response: { drafts: formatedDrafts } });
+  } catch (e) {
+    console.error("Ошибка запроса черновиков", e);
   }
 };
 

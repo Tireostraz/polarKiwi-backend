@@ -3,6 +3,7 @@ import { authenticateToken } from "../middleware/authMiddleware.js";
 import {
   getProjects,
   getProjectsIds,
+  draftProjects,
   getProjectById,
   createProject,
   updateProject,
@@ -20,7 +21,6 @@ router.use(authenticateToken);
  *   name: Projects
  *   description: Управление пользовательскими проектами
  */
-
 /**
  * @swagger
  * components:
@@ -167,8 +167,105 @@ router.get("/", getProjects);
  *                   type: string
  *                   example: Ошибка при получении проектов
  */
-
 router.get("/ids", getProjectsIds);
+
+/**
+ * @swagger
+ * /projects/drafts:
+ *   get:
+ *     summary: Получить список черновиков пользователя или гостя
+ *     tags: [Projects]
+ *     description: >
+ *       Возвращает список проектов в статусе `draft` или `in_cart`, принадлежащих текущему авторизованному пользователю (по `userId`) или гостю (по `guestId`).
+ *     responses:
+ *       200:
+ *         description: Успешный ответ со списком черновиков
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 response:
+ *                   type: object
+ *                   properties:
+ *                     drafts:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           expired_at:
+ *                             type: string
+ *                             format: date-time
+ *                             example: "2025-12-17T16:09:28.570Z"
+ *                           project:
+ *                             type: object
+ *                             properties:
+ *                               id:
+ *                                 type: string
+ *                                 format: uuid
+ *                                 example: "0052dde5-540b-4855-8d55-ff96cbc77f60"
+ *                               title:
+ *                                 type: string
+ *                                 example: "Полароид стандарт"
+ *                               subtitle:
+ *                                 type: string
+ *                                 nullable: true
+ *                                 example: null
+ *                               image_url:
+ *                                 type: string
+ *                                 format: uri
+ *                                 nullable: true
+ *                                 example: null
+ *                               status:
+ *                                 type: string
+ *                                 enum: [draft, in_cart]
+ *                                 example: "in_cart"
+ *                               quantity:
+ *                                 type: integer
+ *                                 example: 1
+ *                               can_be_reordered:
+ *                                 type: boolean
+ *                                 example: false
+ *                               created_at:
+ *                                 type: string
+ *                                 format: date-time
+ *                                 example: "2025-06-17T16:09:28.570Z"
+ *                               updated_at:
+ *                                 type: string
+ *                                 format: date-time
+ *                                 example: "2025-07-11T22:05:08.414Z"
+ *                               product:
+ *                                 type: object
+ *                                 properties:
+ *                                   slug:
+ *                                     type: string
+ *                                     example: "standard"
+ *                                   price:
+ *                                     type: integer
+ *                                     description: Цена продукта в базовой валюте (например, рублях или центах)
+ *                                     example: 20
+ *       401:
+ *         description: Неавторизованный доступ — отсутствует userId и guestId
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Не найден userId или guestId
+ *       500:
+ *         description: Ошибка сервера при получении черновиков
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Ошибка запроса черновиков
+ */
+router.get("/drafts", draftProjects);
 
 /**
  * @swagger
