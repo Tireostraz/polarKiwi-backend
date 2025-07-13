@@ -1,9 +1,61 @@
-import { response } from "express";
 import pool from "../db/db.js";
 import fs from "fs/promises";
 import path from "path";
-import { title } from "process";
-import { subscribe } from "diagnostics_channel";
+
+/* Создать новый проект POST /api/projects*/
+export const createProject = async (req, res) => {
+  try {
+    const userId = req.user?.user_id || null;
+    const guestId = req.guestId || null;
+
+    const productSlug = req.body.product_slug;
+    const resultProduct = await pool.query(
+      "SELECT p.id, p.title, p.subtitle, p.image_url, p.price, p.slug, pr_c.* FROM products as p LEFT JOIN product_configs as pr_c ON (p.id = pr_c.product_id) WHERE (p.slug = $1)",
+      [productSlug]
+    );
+
+    const product = resultProduct.rows[0];
+
+    if (!product) {
+      return res.status(404).json({ error: "Продукт не найден" });
+    }
+
+    const now = new Date();
+    const monthToAdd = 6; //TODO хардкод через сколько будет expired_at. Вынести куда-то?
+    const expired_at = new Date(now.setMonth(now.getMonth() + monthToAdd));
+
+    let ownerColumn, ownerId;
+
+    if (userId) {
+      ownerColumn = "user_id";
+      ownerId = userId;
+    } else if (guestId) {
+      ownerColumn = "guest_id";
+      ownerId = guestId;
+    } else {
+      return res
+        .status(401)
+        .json({ error: "Ошибка авторизации. Нет ни guestId ни userId" });
+    }
+
+    await pool.query(
+      `INSERT INTO projects (${ownerColumn}, product_id, title, subtitle, image_url, expired_at) VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        ownerId,
+        product.id,
+        product.title,
+        product.subtitle,
+        product.image_url,
+        expired_at,
+      ]
+    );
+
+    return res.status(201).json({ response: { message: "Project created" } });
+  } catch (err) {
+    console.error("Error creating project:", err);
+    res.status(500).json({ error: "Ошибка при создании проекта" });
+  }
+};
 
 /* Получить все проекты пользователя */
 export const getProjects = async (req, res) => {
@@ -22,7 +74,7 @@ export const getProjects = async (req, res) => {
   }
 };
 
-/* Получить id всех проектов в работе/в корзине*/
+// Получить id всех проектов в работе/в корзине  /api/projects/ids
 export const getProjectsIds = async (req, res) => {
   try {
     const userId = req.user?.user_id || null;
@@ -64,7 +116,7 @@ export const getProjectsIds = async (req, res) => {
   }
 };
 
-//Получить все черновики
+//Получить все черновики /api/projects/drafts
 export const draftProjects = async (req, res) => {
   try {
     const userId = req.user.user_id || null;
@@ -109,7 +161,11 @@ export const getProjectById = async (req, res) => {
     const { id } = req.params;
 
     const result = await pool.query(
-      "SELECT * FROM projects WHERE id = $1 AND (user_id = $2 OR guest_id = $3)",
+      `SELECT p.*, pr.slug as product_slug, pr.is_out_of_stock, pr_c.*
+      FROM projects as p
+      LEFT JOIN products as pr ON p.product_id = pr.id
+      LEFT JOIN product_configs as pr_c ON pr.id = pr_c.product_id
+      WHERE p.id = $1 AND (p.user_id = $2 OR p.guest_id = $3)`,
       [id, userId, guestId]
     );
 
@@ -117,63 +173,50 @@ export const getProjectById = async (req, res) => {
       return res.status(404).json({ message: "Проект не найден" });
     }
 
-    res.json(result.rows[0]);
+    const formatedProject = result.rows.map((p) => {
+      return {
+        project: {
+          id: p.id,
+          title: p.title,
+          subtitle: p.subtitle,
+          image_url: p.image_url,
+          total: p.total,
+          status: p.status,
+          quantity: p.quantity,
+          can_be_reordered: p.can_be_reordered,
+          created_at: p.created_at,
+          updated_at: p.updated_at,
+          product: {
+            slug: p.product_slug,
+            is_customizable_on_web_mobile: p.is_customizable_on_web_mobile,
+            bypass_customization: p.bypass_customization,
+            is_out_of_stock: p.is_out_of_stock,
+            is_quantity_editable: p.is_quantity_editable,
+          },
+        },
+        config: {
+          min_page_count: p.min_page_count,
+          max_page_count: p.max_page_count,
+          page_increment_step: p.page_increment_step,
+          page_increment_price: p.page_increment_price,
+          display_title: p.display_title,
+          display_format: p.display_format,
+          display_page_name_singular: p.display_page_name_singular,
+          display_page_name_plural: p.display_page_name_plural,
+          min_column_count: p.min_column_count,
+          max_column_count: p.max_column_count,
+          is_zoom_out_enabled: p.is_zoom_out_enabled,
+          should_start_with_gallery: p.should_start_with_gallery,
+          dpi_thresholds: p.dpi_thresholds,
+        },
+        addons: [{}, {}],
+      };
+    });
+
+    return res.status(200).json({ response: formatedProject });
   } catch (err) {
     console.error("Error fetching project:", err);
     res.status(500).json({ error: "Ошибка при получении проекта" });
-  }
-};
-
-/* Создать новый проект */
-export const createProject = async (req, res) => {
-  try {
-    const id = crypto.randomUUID();
-    const userId = req.user?.user_id || null;
-    const guestId = req.guestId || null;
-
-    /* const result = pool.query('SELECT id, title, subtitle,  FROM products') */
-
-    const {
-      title,
-      type,
-      format,
-      product_id,
-      pages_quantity,
-      status = "draft",
-      photos = [],
-    } = req.body;
-
-    const pages = Array.from({ length: pages_quantity }, () => ({
-      id: crypto.randomUUID(),
-      layout: null,
-      elements: [],
-      textBlocks: [],
-    }));
-
-    const result = await pool.query(
-      `INSERT INTO projects 
-        (id, user_id, guest_id, title, type, format, product_id, status, pages, photos)
-       VALUES 
-        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-       RETURNING *`,
-      [
-        id,
-        userId,
-        guestId,
-        title,
-        type,
-        format,
-        product_id,
-        status,
-        JSON.stringify(pages),
-        JSON.stringify(photos),
-      ]
-    );
-
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    console.error("Error creating project:", err);
-    res.status(500).json({ error: "Ошибка при создании проекта" });
   }
 };
 

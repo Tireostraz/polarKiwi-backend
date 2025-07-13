@@ -303,17 +303,59 @@ router.get("/:id", getProjectById);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Project'
+ *             type: object
+ *             required:
+ *               - product_slug
+ *             properties:
+ *               product_slug:
+ *                 type: string
+ *                 example: print7,5x10-glossy
  *     responses:
  *       201:
  *         description: Проект успешно создан
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Project'
- *       400:
- *         description: Неверные данные запроса
+ *               type: object
+ *               properties:
+ *                 response:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: Project created
+ *       401:
+ *         description: Ошибка авторизации — отсутствует userId и guestId
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Ошибка авторизации. Нет ни guestId ни userId
+ *       404:
+ *         description: Продукт не найден
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Продукт не найден
+ *       500:
+ *         description: Ошибка сервера при создании проекта
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Ошибка при создании проекта
  */
+
 router.post("/", createProject);
 
 /**

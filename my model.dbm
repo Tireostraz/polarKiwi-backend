@@ -4,7 +4,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
  Unexpected results may occur if the code is changed deliberately.
 -->
 <dbmodel pgmodeler-ver="1.1.6" use-changelog="false" max-obj-count="16"
-	 last-position="-6,-166" last-zoom="0.8" scene-rect="-8,-207,2756.39,1697.32"
+	 last-position="0,32" last-zoom="0.8" scene-rect="-8,-207,2342.26,1662.92"
 	 default-schema="public" default-owner="postgres"
 	 layers="Default layer,Projects layer"
 	 active-layers="0,1"
@@ -350,11 +350,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<table name="product_templates" layers="0" collapse-mode="2" max-obj-count="4" z-value="0">
+<table name="product_templates" layers="0" collapse-mode="2" max-obj-count="14" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
 	<comment> <![CDATA[Содержит шаблон в целом.]]> </comment>
-	<position x="1260" y="460"/>
+	<position x="1140" y="360"/>
 	<column name="id" not-null="true" default-value="gen_random_uuid()">
 		<type name="uuid" length="0"/>
 	</column>
@@ -362,13 +362,49 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="integer" length="0"/>
 		<comment> <![CDATA[Шаблон какого продукта это]]> </comment>
 	</column>
-	<column name="template_type">
+	<column name="filter_type_definitions">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[{
+   "key": "front-cover",
+   "default_page_key": "PAGE-1-COVER",
+   "localized_description": ""
+},
+{
+   "key": "single-page",
+   "default_page_key": "PAGE-11",
+   "localized_description": ""
+}]]> </comment>
+	</column>
+	<column name="force_pack_color" not-null="true" default-value="false">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="link_in_content" not-null="true" default-value="false">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="increment" not-null="true" default-value="true">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="forced_layouts_filter_type_keys">
+		<type name="text" length="0" dimension="1"/>
+		<comment> <![CDATA[["front-cover"]]]> </comment>
+	</column>
+	<column name="next_filter_type_keys">
+		<type name="text" length="0" dimension="1"/>
+		<comment> <![CDATA[["single-page"]]]> </comment>
+	</column>
+	<column name="definition_version" not-null="true" default-value="'1'">
 		<type name="text" length="0"/>
-		<comment> <![CDATA["book", "strip", etc]]> </comment>
 	</column>
 	<column name="min_dpi" not-null="true" default-value="150">
 		<type name="smallint" length="0"/>
 		<comment> <![CDATA[значение минимального разрешения изображения?]]> </comment>
+	</column>
+	<column name="template_type">
+		<type name="text" length="0"/>
+		<comment> <![CDATA["book", "strip", etc]]> </comment>
+	</column>
+	<column name="definition">
+		<type name="jsonb" length="0"/>
 	</column>
 	<constraint name="product_templates_pk" type="pk-constr" table="public.product_templates">
 		<columns names="id" ref-type="src-columns"/>
@@ -379,7 +415,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<schema name="public"/>
 	<role name="postgres"/>
 	<comment> <![CDATA[Каждая страница шаблона (например, PAGE-1-COVER, PAGE-101).]]> </comment>
-	<position x="1260" y="800"/>
+	<position x="1180" y="860"/>
 	<column name="id" not-null="true">
 		<type name="serial" length="0"/>
 	</column>
@@ -550,7 +586,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="font_definitions" layers="0" collapse-mode="2" max-obj-count="3" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="900" y="1200"/>
+	<position x="1000" y="1280"/>
 	<column name="key" not-null="true">
 		<type name="text" length="0"/>
 		<comment> <![CDATA[Ключ шрифта, например "font-montserrat"]]> </comment>
@@ -571,7 +607,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="color_definitions" layers="0" collapse-mode="2" max-obj-count="6" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="620" y="1200"/>
+	<position x="700" y="1280"/>
 	<column name="key" not-null="true">
 		<type name="text" length="0"/>
 		<comment> <![CDATA["key": "white",]]> </comment>
@@ -600,7 +636,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 </table>
 
-<table name="product_configs" layers="0" collapse-mode="2" max-obj-count="16" z-value="0">
+<table name="product_configs" layers="0" collapse-mode="2" max-obj-count="21" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
 	<position x="1920" y="180"/>
@@ -621,6 +657,22 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 	<column name="page_increment_price">
 		<type name="smallint" length="0"/>
+	</column>
+	<column name="display_title">
+		<type name="text" length="0"/>
+		<comment> <![CDATA["Strips"]]> </comment>
+	</column>
+	<column name="display_format">
+		<type name="text" length="0"/>
+		<comment> <![CDATA["5,1x20,3 cm"]]> </comment>
+	</column>
+	<column name="display_page_name_singular">
+		<type name="text" length="0"/>
+		<comment> <![CDATA["strip"]]> </comment>
+	</column>
+	<column name="display_page_name_plural">
+		<type name="text" length="0"/>
+		<comment> <![CDATA["strips"]]> </comment>
 	</column>
 	<column name="min_column_count">
 		<type name="smallint" length="0"/>
@@ -721,7 +773,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 dst-table="public.products" reference-fk="product_images_product_id_fkey"
 	 src-required="false" dst-required="false">
 	<label ref-type="name-label">
-		<position x="107.365" y="2.56624"/>
+		<position x="23.5287" y="20.3987"/>
 	</label>
 </relationship>
 
@@ -731,7 +783,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 dst-table="public.users" reference-fk="projects_user_id_fkey"
 	 src-required="false" dst-required="false">
 	<label ref-type="name-label">
-		<position x="352.427" y="-4.70121"/>
+		<position x="20.4584" y="-145.996"/>
 	</label>
 </relationship>
 
@@ -741,7 +793,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 dst-table="public.products" reference-fk="projects_product_id_fkey"
 	 src-required="false" dst-required="true">
 	<label ref-type="name-label">
-		<position x="79.9662" y="57.4885"/>
+		<position x="64.0618" y="2.79955"/>
 	</label>
 </relationship>
 
