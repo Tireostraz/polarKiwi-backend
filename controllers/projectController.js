@@ -131,6 +131,8 @@ export const createProject = async (req, res) => {
     const userId = req.user?.user_id || null;
     const guestId = req.guestId || null;
 
+    /* const result = pool.query('SELECT id, title, subtitle,  FROM products') */
+
     const {
       title,
       type,

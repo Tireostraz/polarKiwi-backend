@@ -1,0 +1,799 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+ Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="1.1.6" use-changelog="false" max-obj-count="16"
+	 last-position="-6,-166" last-zoom="0.8" scene-rect="-8,-207,2756.39,1697.32"
+	 default-schema="public" default-owner="postgres"
+	 layers="Default layer,Projects layer"
+	 active-layers="0,1"
+	 layer-name-colors="#000000,#000000"
+	 layer-rect-colors="#b4b4b4,#39df40"
+	 show-layer-names="false" show-layer-rects="false">
+<role name="mydb"
+ superuser="true"
+ inherit="true"
+ login="true"
+ password="********">
+</role>
+
+<database name="polarKiwi" encoding="UTF8" lc-collate="ru_RU.UTF-8" lc-ctype="ru_RU.UTF-8" is-template="false" allow-conns="true">
+	<role name="mydb"/>
+	<tablespace name="pg_default"/>
+</database>
+
+<schema name="public" layers="0" rect-visible="true" fill-color="#e1e1e1" name-color="#000000" sql-disabled="true">
+</schema>
+
+<sequence name="users_user_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="2147483647" cache="1">
+	<schema name="public"/>
+	<role name="mydb"/>
+</sequence>
+
+<table name="users" layers="0" collapse-mode="2" max-obj-count="21" z-value="0">
+	<schema name="public"/>
+	<role name="mydb"/>
+	<position x="20" y="-80"/>
+	<column name="user_id" not-null="true" sequence="public.users_user_id_seq">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="email" not-null="true">
+		<type name="character varying" length="100"/>
+	</column>
+	<column name="email_md5">
+		<type name="text" length="0"/>
+	</column>
+	<column name="password">
+		<type name="character varying" length="100"/>
+	</column>
+	<column name="firstname">
+		<type name="text" length="0"/>
+	</column>
+	<column name="lastname">
+		<type name="text" length="0"/>
+	</column>
+	<column name="gender">
+		<type name="text" length="0"/>
+	</column>
+	<column name="birth_date">
+		<type name="date" length="0"/>
+	</column>
+	<column name="address">
+		<type name="text" length="0"/>
+	</column>
+	<column name="phone_number">
+		<type name="character varying" length="15"/>
+	</column>
+	<column name="is_verified" default-value="false">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="is_guest" not-null="true" default-value="true">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="gallery_key">
+		<type name="text" length="0"/>
+	</column>
+	<column name="newsletter_subscription">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Подписка на рассылку. Хз пока как использовать]]> </comment>
+	</column>
+	<column name="currency_code_3" not-null="true" default-value="'RUB'">
+		<type name="character varying" length="3"/>
+	</column>
+	<column name="printed_photo_count" not-null="true" default-value="0">
+		<type name="integer" length="0"/>
+		<comment> <![CDATA[Статистика]]> </comment>
+	</column>
+	<column name="registration_date" not-null="true" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="last_login" not-null="true" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<constraint name="users_pkey" type="pk-constr" table="public.users">
+		<columns names="user_id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="users_email_key" type="uq-constr" table="public.users">
+		<columns names="email" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="roles_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="2147483647" cache="1">
+	<schema name="public"/>
+	<role name="mydb"/>
+</sequence>
+
+<table name="roles" layers="0" collapse-mode="2" max-obj-count="2" z-value="0">
+	<schema name="public"/>
+	<role name="mydb"/>
+	<position x="600" y="-80"/>
+	<column name="id" not-null="true" sequence="public.roles_id_seq">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="name" not-null="true">
+		<type name="character varying" length="50"/>
+	</column>
+	<constraint name="roles_pkey" type="pk-constr" table="public.roles">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="roles_name_key" type="uq-constr" table="public.roles">
+		<columns names="name" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="products_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="2147483647" cache="1">
+	<schema name="public"/>
+	<role name="mydb"/>
+</sequence>
+
+<table name="products" layers="0" collapse-mode="2" max-obj-count="15" z-value="0">
+	<schema name="public"/>
+	<role name="mydb"/>
+	<position x="1160" y="-160"/>
+	<column name="id" not-null="true" sequence="public.products_id_seq">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="slug" not-null="true">
+		<type name="character varying" length="100"/>
+	</column>
+	<column name="title" not-null="true">
+		<type name="text" length="100"/>
+	</column>
+	<column name="subtitle">
+		<type name="text" length="100"/>
+	</column>
+	<column name="price" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="category" not-null="true">
+		<type name="text" length="20"/>
+	</column>
+	<column name="sub_category">
+		<type name="text" length="20"/>
+	</column>
+	<column name="short_description">
+		<type name="text" length="0"/>
+	</column>
+	<column name="full_description">
+		<type name="text" length="0"/>
+	</column>
+	<column name="image_url">
+		<type name="text" length="255"/>
+	</column>
+	<column name="is_out_of_stock" not-null="true" default-value="false">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="is_active" default-value="true">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="created_at" not-null="true" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<constraint name="products_pkey" type="pk-constr" table="public.products">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="products_slug_key" type="uq-constr" table="public.products">
+		<columns names="slug" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="product_images_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="2147483647" cache="1">
+	<schema name="public"/>
+	<role name="mydb"/>
+</sequence>
+
+<table name="product_images" layers="0" collapse-mode="2" max-obj-count="4" z-value="0">
+	<schema name="public"/>
+	<role name="mydb"/>
+	<position x="1860" y="-140"/>
+	<column name="id" not-null="true" sequence="public.product_images_id_seq">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="product_id">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="url" not-null="true">
+		<type name="text" length="255"/>
+	</column>
+	<column name="alt_text">
+		<type name="text" length="100"/>
+	</column>
+	<constraint name="product_images_pkey" type="pk-constr" table="public.product_images">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="templates_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="2147483647" cache="1">
+	<schema name="public"/>
+	<role name="mydb"/>
+</sequence>
+
+<table name="projects" layers="0" collapse-mode="2" rls-enabled="true" max-obj-count="16" z-value="0">
+	<schema name="public"/>
+	<role name="mydb"/>
+	<position x="580" y="200"/>
+	<column name="id" not-null="true" default-value="gen_random_uuid()">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="user_id">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="product_id" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="guest_id">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="title" not-null="true">
+		<type name="text" length="255"/>
+	</column>
+	<column name="subtitle">
+		<type name="text" length="255"/>
+	</column>
+	<column name="image_url">
+		<type name="text" length="255"/>
+		<comment> <![CDATA[Путь к превью изображению]]> </comment>
+	</column>
+	<column name="total">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Пока просто итоговая цена в рублях. Далее можно сделать:
+{
+   "currency_code_3": "EUR",
+   "cents": 3890
+}]]> </comment>
+	</column>
+	<column name="status" not-null="true" default-value="'draft'">
+		<type name="text" length="20"/>
+	</column>
+	<column name="quantity" not-null="true" default-value="1">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="can_be_reordered" not-null="true" default-value="false">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="created_at" not-null="true" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="updated_at" not-null="true" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="expired_at" not-null="true">
+		<type name="timestamptz" length="0"/>
+		<comment> <![CDATA[Дата удаления (6 месяцев после добавления)]]> </comment>
+	</column>
+	<constraint name="projects_pk" type="pk-constr" table="public.projects">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="pages" layers="0" collapse-mode="2" max-obj-count="7" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="120" y="540"/>
+	<column name="id" not-null="true" default-value="gen_random_uuid()">
+		<type name="uuid" length="0"/>
+		<comment> <![CDATA[соответствует "key" в JSON в cheerz. Это v1 UUID]]> </comment>
+	</column>
+	<column name="project_id">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="index">
+		<type name="integer" length="0"/>
+		<comment> <![CDATA[Для порядка страниц]]> </comment>
+	</column>
+	<column name="filter_type_key" not-null="true">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[например, 'single-page', 'front-cover']]> </comment>
+	</column>
+	<column name="page_definition_key" not-null="true">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[например, 'PAGE-101']]> </comment>
+	</column>
+	<column name="color_key" not-null="true">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[например, 'white']]> </comment>
+	</column>
+	<constraint name="pages_pk" type="pk-constr" table="public.pages">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="editable_pictures" layers="0" collapse-mode="2" max-obj-count="14" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="120" y="900"/>
+	<column name="id" not-null="true" default-value="gen_random_uuid()">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="page_id" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="key">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[editable_picture_key, например, 'img1']]> </comment>
+	</column>
+	<column name="selection_photo_key">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[ссылка на selection_photo (можно вынести в отдельную таблицу)]]> </comment>
+	</column>
+	<column name="filter_tag" not-null="true" default-value="'none'">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Для утановки фильтра на изображении или фильтрации данного изображения?]]> </comment>
+	</column>
+	<column name="is_default" not-null="true">
+		<type name="boolean" length="0"/>
+		<comment> <![CDATA[Для чего? Установка данного изображения как заставку проекта?]]> </comment>
+	</column>
+	<column name="placed_by" not-null="true" default-value="'none'">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Кем установлено. Зачем?]]> </comment>
+	</column>
+	<column name="rotation" not-null="true" default-value="0">
+		<type name="integer" length="0"/>
+		<comment> <![CDATA[Определение поворота изображения]]> </comment>
+	</column>
+	<column name="offset_x_dmm" not-null="true" default-value="0">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="offset_y_dmm" not-null="true" default-value="0">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="width_dmm" not-null="true" default-value="0">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="height_dmm" not-null="true" default-value="0">
+		<type name="integer" length="0"/>
+	</column>
+	<constraint name="editable_pictures_pk" type="pk-constr" table="public.editable_pictures">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="product_templates" layers="0" collapse-mode="2" max-obj-count="4" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment> <![CDATA[Содержит шаблон в целом.]]> </comment>
+	<position x="1260" y="460"/>
+	<column name="id" not-null="true" default-value="gen_random_uuid()">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="product_id" not-null="true">
+		<type name="integer" length="0"/>
+		<comment> <![CDATA[Шаблон какого продукта это]]> </comment>
+	</column>
+	<column name="template_type">
+		<type name="text" length="0"/>
+		<comment> <![CDATA["book", "strip", etc]]> </comment>
+	</column>
+	<column name="min_dpi" not-null="true" default-value="150">
+		<type name="smallint" length="0"/>
+		<comment> <![CDATA[значение минимального разрешения изображения?]]> </comment>
+	</column>
+	<constraint name="product_templates_pk" type="pk-constr" table="public.product_templates">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="template_pages" layers="0" collapse-mode="2" max-obj-count="13" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment> <![CDATA[Каждая страница шаблона (например, PAGE-1-COVER, PAGE-101).]]> </comment>
+	<position x="1260" y="800"/>
+	<column name="id" not-null="true">
+		<type name="serial" length="0"/>
+	</column>
+	<column name="template_id" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="key" not-null="true">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Хз зачем, как slug "key": "MILAN-FRONT" или "key": "PARIS-FRONT",]]> </comment>
+	</column>
+	<column name="type">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Всегда повторяет filter_type_keys "front-cover", "single-page" ]]> </comment>
+	</column>
+	<column name="filter_type_keys" not-null="true">
+		<type name="text" length="0" dimension="1"/>
+		<comment> <![CDATA[Определяет тип страницы ["front-cover"], ["spine"], ["back-cover"], ["single-page"]]]> </comment>
+	</column>
+	<column name="width_dmm">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="height_dmm">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="color_keys">
+		<type name="text" length="0" dimension="1"/>
+		<comment> <![CDATA[массив цветов, применимых к данной странице?
+["white", "bleu", "bleu_fonce"]]]> </comment>
+	</column>
+	<column name="cover_type">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Только для обложек. Например, "hard"]]> </comment>
+	</column>
+	<column name="category_key">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Для разбиения по категориям. Например 1 изображение на странице или 2 и т.д.]]> </comment>
+	</column>
+	<column name="elements">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[Для хранения элементов страницы. Для пояснений см схожую таблицу]]> </comment>
+	</column>
+	<constraint name="template_pages_pk" type="pk-constr" table="public.template_pages">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="template_elements" layers="0" collapse-mode="2" max-obj-count="26" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment> <![CDATA[Элементы на странице: изображения, текст и т.д.]]> </comment>
+	<position x="1900" y="740"/>
+	<column name="id" not-null="true">
+		<type name="serial" length="0"/>
+	</column>
+	<column name="page_id" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="key" not-null="true">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Ключ конкретного элемента. Например, "key": "img2",  "key": "text1"]]> </comment>
+	</column>
+	<column name="type" not-null="true">
+		<type name="text" length="0"/>
+		<comment> <![CDATA["editable-picture", "editable-text", "forced-image", "forced-text"]]> </comment>
+	</column>
+	<column name="x_dmm" not-null="true" default-value="0">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="y_dmm" not-null="true" default-value="0">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="width_dmm" not-null="true" default-value="0">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="height_dmm" not-null="true" default-value="0">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="z_index" not-null="true" default-value="0">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="anchor_page" not-null="true">
+		<type name="text" length="0" dimension="1"/>
+		<comment> <![CDATA[["top", "left"]]]> </comment>
+	</column>
+	<column name="anchor_self" not-null="true">
+		<type name="text" length="0" dimension="1"/>
+		<comment> <![CDATA[["top", "left"]]]> </comment>
+	</column>
+	<column name="order_index" not-null="true" default-value="1">
+		<type name="smallint" length="0"/>
+		<comment> <![CDATA[Пока не ясно для чего. Определяет порядок изображений "сверху вниз, слева направо"
+"order": 1 у первого "key": "img1", и "order": 2 у второго "key": "img2",]]> </comment>
+	</column>
+	<column name="asset_key">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Непонятно зачем. "asset_key": "option_choice_asset_glossy", и "asset_key": "option_choice_asset_matte",]]> </comment>
+	</column>
+	<column name="font_key">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Для текстовых элементов. "key": "text1", "type": "forced-text","font_key": "font-didot",]]> </comment>
+	</column>
+	<column name="font_keys">
+		<type name="text" length="0" dimension="1"/>
+		<comment> <![CDATA[Для пользовательских (!) текстовых элементов. Пока не понятно зачем дублировать
+"key": "text","type": "editable-text", 
+"font_keys": ["font-montserrat","font-nunito", "font-playfair"]]]> </comment>
+	</column>
+	<column name="font_color_key">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Также для текстовых элементов. "font_color_key": "primary",]]> </comment>
+	</column>
+	<column name="font_size_dmm">
+		<type name="smallint" length="0"/>
+		<comment> <![CDATA["font_size_dmm": 28 или "font_size_dmm": 120 или 42, 60, 70, 100]]> </comment>
+	</column>
+	<column name="line_height_dmm">
+		<type name="smallint" length="0"/>
+		<comment> <![CDATA[Высота чего-то. Текстового блока всего? Всегда больше чем размер шрифта ]]> </comment>
+	</column>
+	<column name="text_align">
+		<type name="text" length="0" dimension="1"/>
+		<comment> <![CDATA[["middle", "center"]   ["middle", "right"]]]> </comment>
+	</column>
+	<column name="text_orientation">
+		<type name="smallint" length="0"/>
+		<comment> <![CDATA[Похоже, градусы. Встречаются только 0 и 90]]> </comment>
+	</column>
+	<column name="localized_placeholder">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Что написано тут по умолчанию. "My title"]]> </comment>
+	</column>
+	<column name="interpolated_content">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Хз для чего. Используется только в forced-text. И только "interpolated_content": "title",]]> </comment>
+	</column>
+	<constraint name="template_elements_pk" type="pk-constr" table="public.template_elements">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="editable_texts" layers="0" collapse-mode="2" max-obj-count="6" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="480" y="920"/>
+	<column name="id" not-null="true" default-value="gen_random_uuid()">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="page_id" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="editable_text_key">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Хз зачем но "editable_text_key": "text",]]> </comment>
+	</column>
+	<column name="font_key">
+		<type name="text" length="0"/>
+		<comment> <![CDATA["font_key": "font-montserrat"]]> </comment>
+	</column>
+	<column name="content">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Самое главное - содержимое]]> </comment>
+	</column>
+	<constraint name="editable_texts_pk" type="pk-constr" table="public.editable_texts">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="font_definitions" layers="0" collapse-mode="2" max-obj-count="3" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="900" y="1200"/>
+	<column name="key" not-null="true">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Ключ шрифта, например "font-montserrat"]]> </comment>
+	</column>
+	<column name="font_tag">
+		<type name="text" length="0"/>
+		<comment> <![CDATA["font_tag": "montserrat",]]> </comment>
+	</column>
+	<column name="width_per_height_mean_char_ratio">
+		<type name="numeric" length="4" precision="3"/>
+		<comment> <![CDATA["width_per_height_mean_char_ratio": 0.65]]> </comment>
+	</column>
+	<constraint name="font_definitions_pk" type="pk-constr" table="public.font_definitions">
+		<columns names="key" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="color_definitions" layers="0" collapse-mode="2" max-obj-count="6" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="620" y="1200"/>
+	<column name="key" not-null="true">
+		<type name="text" length="0"/>
+		<comment> <![CDATA["key": "white",]]> </comment>
+	</column>
+	<column name="theme_value">
+		<type name="text" length="0"/>
+		<comment> <![CDATA["theme_value": "#ffffff"]]> </comment>
+	</column>
+	<column name="font_colors">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[{
+   "value": "#000000",
+   "key": "primary"
+ }]]> </comment>
+	</column>
+	<column name="background_value">
+		<type name="text" length="0"/>
+		<comment> <![CDATA["background_value": "#ffffff"]]> </comment>
+	</column>
+	<column name="tint_colors">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[{
+   "key": "tint",
+   "value": "#000000"
+}]]> </comment>
+	</column>
+</table>
+
+<table name="product_configs" layers="0" collapse-mode="2" max-obj-count="16" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="1920" y="180"/>
+	<column name="id" not-null="true">
+		<type name="serial" length="0"/>
+	</column>
+	<column name="product_id" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="min_page_count">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="max_page_count">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="page_increment_step">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="page_increment_price">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="min_column_count">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="max_column_count">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="is_zoom_out_enabled" not-null="true" default-value="true">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="should_start_with_gallery" not-null="true" default-value="false">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="dpi_thresholds">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[{
+   "optimal": 300,
+   "acceptable": 150
+ }]]> </comment>
+	</column>
+	<column name="bypass_customization" not-null="true" default-value="false">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="is_quantity_editable" not-null="true" default-value="true">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="is_customizable_on_web_mobile" not-null="true" default-value="true">
+		<type name="boolean" length="0"/>
+	</column>
+	<constraint name="product_configs_pk" type="pk-constr" table="public.product_configs">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<constraint name="product_images_product_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.products" table="public.product_images">
+	<columns names="product_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="projects_user_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.users" table="public.projects">
+	<columns names="user_id" ref-type="src-columns"/>
+	<columns names="user_id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="projects_product_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="SET NULL" ref-table="public.products" table="public.projects">
+	<columns names="product_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="rel_project_id" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.projects" table="public.pages">
+	<columns names="project_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="owner_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.pages" table="public.editable_pictures">
+	<columns names="page_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="owner_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.products" table="public.product_templates">
+	<columns names="product_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="owner_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.product_templates" table="public.template_pages">
+	<columns names="template_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="owner_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.template_pages" table="public.template_elements">
+	<columns names="page_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="owner_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.pages" table="public.editable_texts">
+	<columns names="page_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="owner_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.products" table="public.product_configs">
+	<columns names="product_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<relationship name="rel_product_images_products" type="relfk" layers="0"
+	 custom-color="#b10902"
+	 src-table="public.product_images"
+	 dst-table="public.products" reference-fk="product_images_product_id_fkey"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="107.365" y="2.56624"/>
+	</label>
+</relationship>
+
+<relationship name="rel_projects_users" type="relfk" layers="0"
+	 custom-color="#2e1aae"
+	 src-table="public.projects"
+	 dst-table="public.users" reference-fk="projects_user_id_fkey"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="352.427" y="-4.70121"/>
+	</label>
+</relationship>
+
+<relationship name="rel_projects_products" type="relfk" layers="0"
+	 custom-color="#842197"
+	 src-table="public.projects"
+	 dst-table="public.products" reference-fk="projects_product_id_fkey"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="79.9662" y="57.4885"/>
+	</label>
+</relationship>
+
+<relationship name="rel_pages_projects" type="relfk" layers="0"
+	 src-table="public.pages"
+	 dst-table="public.projects" reference-fk="rel_project_id"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="0" y="0"/>
+	</label>
+</relationship>
+
+<relationship name="rel_editable_pictures_pages" type="relfk" layers="0"
+	 src-table="public.editable_pictures"
+	 dst-table="public.pages" reference-fk="owner_fk"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="-97.721" y="-18.753"/>
+	</label>
+</relationship>
+
+<relationship name="rel_product_templates_products" type="relfk" layers="0"
+	 src-table="public.product_templates"
+	 dst-table="public.products" reference-fk="owner_fk"
+	 src-required="false" dst-required="true"/>
+
+<relationship name="rel_template_pages_product_templates" type="relfk" layers="0"
+	 src-table="public.template_pages"
+	 dst-table="public.product_templates" reference-fk="owner_fk"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="25.5383" y="20.4768"/>
+	</label>
+</relationship>
+
+<relationship name="rel_template_elements_template_pages" type="relfk" layers="0"
+	 src-table="public.template_elements"
+	 dst-table="public.template_pages" reference-fk="owner_fk"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="35.5305" y="-101.978"/>
+	</label>
+</relationship>
+
+<relationship name="rel_editable_texts_pages" type="relfk" layers="0"
+	 src-table="public.editable_texts"
+	 dst-table="public.pages" reference-fk="owner_fk"
+	 src-required="false" dst-required="true"/>
+
+<relationship name="rel_product_configs_products" type="relfk" layers="0"
+	 src-table="public.product_configs"
+	 dst-table="public.products" reference-fk="owner_fk"
+	 src-required="false" dst-required="true"/>
+
+</dbmodel>

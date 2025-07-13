@@ -22,7 +22,7 @@ const generateRefreshToken = (payload) => {
 
 export const register = async (req, res) => {
   try {
-    const { email, name, password } = req.body;
+    const { email, firstname, lastname, password } = req.body;
 
     const userCheck = await pool.query(`SELECT * FROM users WHERE email = $1`, [
       email,
@@ -34,37 +34,17 @@ export const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const userTypeId = req.body.user_type_id || 1;
-    const role = "user";
-
     // Отправка письма верификации
     const emailToken = jwt.sign({ email }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
 
-    /* console.log("SMTP_USER:", process.env.SMTP_USER);
-    console.log("SMTP_PASS:", process.env.SMTP_PASS); */
-
-    /* const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${emailToken}`;
-
-    await transporter.sendMail({
-      from: '"My Company" <noreply@polarkiwi.ru>',
-      to: email,
-      subject: "Подтверждение регистрации",
-      html: `
-    <h3>Здравствуйте, ${name}!</h3>
-    <p>Пожалуйста, подтвердите ваш email, перейдя по ссылке ниже:</p>
-    <a href="${verificationLink}">${verificationLink}</a>
-    <p>Если вы не регистрировались — просто проигнорируйте это письмо.</p>
-  `,
-    }); */
-
     const result = await pool.query(
-      `INSERT INTO users (email, username, password, user_type_id) VALUES ($1, $2, $3, $4) RETURNING user_id`,
-      [email, name, hashedPassword, userTypeId]
+      `INSERT INTO users (email, password, is_guest) VALUES ($1, $2, $3) RETURNING user_id`,
+      [email, hashedPassword, false]
     );
 
-    const payload = { id: result.rows[0].user_id, role: role };
+    const payload = { id: result.rows[0].user_id };
 
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
@@ -98,7 +78,7 @@ export const login = async (req, res) => {
     const { email, password, rememberMe } = req.body;
 
     const userResult = await pool.query(
-      `SELECT user_id, username, password, email, roles.name as role, is_verified FROM users, roles WHERE user_type_id = roles.id AND email = $1`,
+      `SELECT user_id, firstname, lastname, password, email, is_verified FROM users WHERE email = $1`,
       [email]
     );
 
@@ -110,9 +90,9 @@ export const login = async (req, res) => {
 
     const sendUser = {
       id: user.user_id,
-      name: user.username,
+      firstname: user.firstname,
+      lastname: user.lastname,
       email: user.email,
-      role: user.role,
     };
 
     console.log(sendUser);
@@ -126,7 +106,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ error: "Введён неверный пароль" });
     }
 
-    const payload = { id: user.user_id, role: user.role };
+    const payload = { id: user.user_id };
 
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
@@ -176,7 +156,7 @@ export const refreshToken = (req, res) => {
         return res.status(403).json({ error: "Refresh токен недействителен" });
       }
 
-      const payload = { id: decoded.id, role: decoded.role };
+      const payload = { id: decoded.id };
       const newAccessToken = generateAccessToken(payload);
 
       //Access Token
@@ -200,13 +180,6 @@ export const refreshToken = (req, res) => {
 };
 
 export const logout = (req, res) => {
-  /* res.clearCookie("refreshToken", {
-    httpOnly: true,
-    path: "/",
-    //secure: process.env.NODE_ENV === "production" ? "true" : "false",
-    secure: "false",
-    sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None",
-  }); */
   res.clearCookie("refreshToken");
   res.clearCookie("accessToken");
 
@@ -220,9 +193,9 @@ export const check = (req, res) => {
 
   res.status(200).json({
     id: req.user.user_id,
-    name: req.user.username,
+    firstname: req.user.firstname,
+    lastname: req.user.lastname,
     email: req.user.email,
-    role: req.user.role,
   });
 };
 

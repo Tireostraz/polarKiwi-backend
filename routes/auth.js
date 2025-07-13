@@ -31,24 +31,16 @@ const router = express.Router();
  *             type: object
  *             required:
  *               - email
- *               - name
  *               - password
  *             properties:
  *               email:
  *                 type: string
  *                 format: email
  *                 example: user@example.com
- *               name:
- *                 type: string
- *                 example: Иван Иванов
  *               password:
  *                 type: string
  *                 format: password
  *                 example: securePassword123
- *               user_type_id:
- *                 type: integer
- *                 description: ID типа пользователя (опционально)
- *                 example: 1
  *     responses:
  *       201:
  *         description: Пользователь успешно зарегистрирован
