@@ -4,7 +4,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
  Unexpected results may occur if the code is changed deliberately.
 -->
 <dbmodel pgmodeler-ver="1.1.6" use-changelog="false" max-obj-count="16"
-	 last-position="0,32" last-zoom="0.8" scene-rect="-8,-207,2342.26,1662.92"
+	 last-position="-6,390" last-zoom="0.8" scene-rect="-8,-207,2342.26,1662.92"
 	 default-schema="public" default-owner="postgres"
 	 layers="Default layer,Projects layer"
 	 active-layers="0,1"
@@ -267,7 +267,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<table name="pages" layers="0" collapse-mode="2" max-obj-count="7" z-value="0">
+<table name="pages" layers="0" collapse-mode="2" max-obj-count="4" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
 	<position x="120" y="540"/>
@@ -282,17 +282,15 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="integer" length="0"/>
 		<comment> <![CDATA[Для порядка страниц]]> </comment>
 	</column>
-	<column name="filter_type_key" not-null="true">
-		<type name="text" length="0"/>
-		<comment> <![CDATA[например, 'single-page', 'front-cover']]> </comment>
-	</column>
-	<column name="page_definition_key" not-null="true">
-		<type name="text" length="0"/>
-		<comment> <![CDATA[например, 'PAGE-101']]> </comment>
-	</column>
-	<column name="color_key" not-null="true">
-		<type name="text" length="0"/>
-		<comment> <![CDATA[например, 'white']]> </comment>
+	<column name="pages">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[Здесь храним сами страницы вида
+{
+    "key": "page-0",
+   "filter_type_key": "default",
+   "page_definition_key": "STANDART",
+   "color_key": "white"    
+}]]> </comment>
 	</column>
 	<constraint name="pages_pk" type="pk-constr" table="public.pages">
 		<columns names="id" ref-type="src-columns"/>
