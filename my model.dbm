@@ -4,7 +4,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
  Unexpected results may occur if the code is changed deliberately.
 -->
 <dbmodel pgmodeler-ver="1.1.6" use-changelog="false" max-obj-count="16"
-	 last-position="-6,390" last-zoom="0.8" scene-rect="-8,-207,2342.26,1662.92"
+	 last-position="0,162" last-zoom="0.8" scene-rect="-8,-227,2342.26,1682.92"
 	 default-schema="public" default-owner="postgres"
 	 layers="Default layer,Projects layer"
 	 active-layers="0,1"
@@ -34,7 +34,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="users" layers="0" collapse-mode="2" max-obj-count="21" z-value="0">
 	<schema name="public"/>
 	<role name="mydb"/>
-	<position x="20" y="-80"/>
+	<position x="20" y="-100"/>
 	<column name="user_id" not-null="true" sequence="public.users_user_id_seq">
 		<type name="integer" length="0"/>
 	</column>
@@ -107,7 +107,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="roles" layers="0" collapse-mode="2" max-obj-count="2" z-value="0">
 	<schema name="public"/>
 	<role name="mydb"/>
-	<position x="600" y="-80"/>
+	<position x="600" y="-100"/>
 	<column name="id" not-null="true" sequence="public.roles_id_seq">
 		<type name="integer" length="0"/>
 	</column>
@@ -130,7 +130,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="products" layers="0" collapse-mode="2" max-obj-count="15" z-value="0">
 	<schema name="public"/>
 	<role name="mydb"/>
-	<position x="1160" y="-160"/>
+	<position x="1160" y="-180"/>
 	<column name="id" not-null="true" sequence="public.products_id_seq">
 		<type name="integer" length="0"/>
 	</column>
@@ -186,7 +186,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="product_images" layers="0" collapse-mode="2" max-obj-count="4" z-value="0">
 	<schema name="public"/>
 	<role name="mydb"/>
-	<position x="1860" y="-140"/>
+	<position x="1860" y="-160"/>
 	<column name="id" not-null="true" sequence="public.product_images_id_seq">
 		<type name="integer" length="0"/>
 	</column>
@@ -209,10 +209,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<role name="mydb"/>
 </sequence>
 
-<table name="projects" layers="0" collapse-mode="2" rls-enabled="true" max-obj-count="16" z-value="0">
+<table name="projects" layers="0" collapse-mode="2" rls-enabled="true" max-obj-count="18" z-value="0">
 	<schema name="public"/>
 	<role name="mydb"/>
-	<position x="580" y="200"/>
+	<position x="580" y="180"/>
 	<column name="id" not-null="true" default-value="gen_random_uuid()">
 		<type name="uuid" length="0"/>
 	</column>
@@ -223,6 +223,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="integer" length="0"/>
 	</column>
 	<column name="guest_id">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="template_id">
 		<type name="uuid" length="0"/>
 	</column>
 	<column name="title" not-null="true">
@@ -270,7 +273,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="pages" layers="0" collapse-mode="2" max-obj-count="4" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="120" y="540"/>
+	<position x="120" y="520"/>
 	<column name="id" not-null="true" default-value="gen_random_uuid()">
 		<type name="uuid" length="0"/>
 		<comment> <![CDATA[соответствует "key" в JSON в cheerz. Это v1 UUID]]> </comment>
@@ -278,19 +281,25 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="project_id">
 		<type name="uuid" length="0"/>
 	</column>
-	<column name="index">
-		<type name="integer" length="0"/>
-		<comment> <![CDATA[Для порядка страниц]]> </comment>
-	</column>
 	<column name="pages">
 		<type name="jsonb" length="0"/>
-		<comment> <![CDATA[Здесь храним сами страницы вида
+		<comment> <![CDATA[Здесь храним массив объектов страниц вида:
 {
     "key": "page-0",
    "filter_type_key": "default",
    "page_definition_key": "STANDART",
    "color_key": "white"    
 }]]> </comment>
+	</column>
+	<column name="print_quantities">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[Только для template_type = 'print'. Массив объектов вида:
+[
+{
+   "page_key": "page-0",
+   "quantity": 1
+}
+]]]> </comment>
 	</column>
 	<constraint name="pages_pk" type="pk-constr" table="public.pages">
 		<columns names="id" ref-type="src-columns"/>
@@ -300,7 +309,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="editable_pictures" layers="0" collapse-mode="2" max-obj-count="14" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="120" y="900"/>
+	<position x="120" y="880"/>
 	<column name="id" not-null="true" default-value="gen_random_uuid()">
 		<type name="uuid" length="0"/>
 	</column>
@@ -348,11 +357,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<table name="product_templates" layers="0" collapse-mode="2" max-obj-count="14" z-value="0">
+<table name="product_templates" layers="0" collapse-mode="2" max-obj-count="15" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
 	<comment> <![CDATA[Содержит шаблон в целом.]]> </comment>
-	<position x="1140" y="360"/>
+	<position x="1160" y="360"/>
 	<column name="id" not-null="true" default-value="gen_random_uuid()">
 		<type name="uuid" length="0"/>
 	</column>
@@ -401,8 +410,18 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="text" length="0"/>
 		<comment> <![CDATA["book", "strip", etc]]> </comment>
 	</column>
-	<column name="definition">
+	<column name="pages">
 		<type name="jsonb" length="0"/>
+	</column>
+	<column name="print_quantities">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[Массив начального количества объектов страниц вида:
+[
+  {
+     page_key: "page-0",
+     quantity: 1,
+  },
+]]]> </comment>
 	</column>
 	<constraint name="product_templates_pk" type="pk-constr" table="public.product_templates">
 		<columns names="id" ref-type="src-columns"/>
@@ -413,7 +432,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<schema name="public"/>
 	<role name="postgres"/>
 	<comment> <![CDATA[Каждая страница шаблона (например, PAGE-1-COVER, PAGE-101).]]> </comment>
-	<position x="1180" y="860"/>
+	<position x="1180" y="840"/>
 	<column name="id" not-null="true">
 		<type name="serial" length="0"/>
 	</column>
@@ -464,7 +483,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<schema name="public"/>
 	<role name="postgres"/>
 	<comment> <![CDATA[Элементы на странице: изображения, текст и т.д.]]> </comment>
-	<position x="1900" y="740"/>
+	<position x="1900" y="720"/>
 	<column name="id" not-null="true">
 		<type name="serial" length="0"/>
 	</column>
@@ -557,7 +576,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="editable_texts" layers="0" collapse-mode="2" max-obj-count="6" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="480" y="920"/>
+	<position x="480" y="900"/>
 	<column name="id" not-null="true" default-value="gen_random_uuid()">
 		<type name="uuid" length="0"/>
 	</column>
@@ -584,7 +603,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="font_definitions" layers="0" collapse-mode="2" max-obj-count="3" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="1000" y="1280"/>
+	<position x="1000" y="1260"/>
 	<column name="key" not-null="true">
 		<type name="text" length="0"/>
 		<comment> <![CDATA[Ключ шрифта, например "font-montserrat"]]> </comment>
@@ -605,7 +624,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="color_definitions" layers="0" collapse-mode="2" max-obj-count="6" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="700" y="1280"/>
+	<position x="700" y="1260"/>
 	<column name="key" not-null="true">
 		<type name="text" length="0"/>
 		<comment> <![CDATA["key": "white",]]> </comment>
@@ -637,7 +656,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="product_configs" layers="0" collapse-mode="2" max-obj-count="21" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="1920" y="180"/>
+	<position x="1920" y="160"/>
 	<column name="id" not-null="true">
 		<type name="serial" length="0"/>
 	</column>
@@ -800,7 +819,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 dst-table="public.projects" reference-fk="rel_project_id"
 	 src-required="false" dst-required="false">
 	<label ref-type="name-label">
-		<position x="0" y="0"/>
+		<position x="33.9993" y="61.061"/>
 	</label>
 </relationship>
 
@@ -816,14 +835,18 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <relationship name="rel_product_templates_products" type="relfk" layers="0"
 	 src-table="public.product_templates"
 	 dst-table="public.products" reference-fk="owner_fk"
-	 src-required="false" dst-required="true"/>
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="13.806" y="-30.853"/>
+	</label>
+</relationship>
 
 <relationship name="rel_template_pages_product_templates" type="relfk" layers="0"
 	 src-table="public.template_pages"
 	 dst-table="public.product_templates" reference-fk="owner_fk"
 	 src-required="false" dst-required="true">
 	<label ref-type="name-label">
-		<position x="25.5383" y="20.4768"/>
+		<position x="140.839" y="-10.853"/>
 	</label>
 </relationship>
 
