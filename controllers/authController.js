@@ -95,8 +95,6 @@ export const login = async (req, res) => {
       email: user.email,
     };
 
-    console.log(sendUser);
-
     if (!user.is_verified) {
       return res.status(403).json({ error: "Подтвердите email перед входом" });
     }
@@ -122,7 +120,6 @@ export const login = async (req, res) => {
         ? parseTimeToMs(process.env.JWT_EXPIRES_IN)
         : undefined,
     });
-    console.log("access cookie sent to user");
 
     if (rememberMe) {
       res.cookie("refreshToken", refreshToken, {
@@ -134,7 +131,6 @@ export const login = async (req, res) => {
         /* sameSite: process.env.NODE_ENV === "production" ? "Strict" : "None", */
         maxAge: parseTimeToMs(process.env.JWT_REFRESH_EXPIRES_IN),
       });
-      console.log("refresh cookie sent to user");
     }
 
     res.status(200).json({ message: "Вход выполнен успешно", user: sendUser });

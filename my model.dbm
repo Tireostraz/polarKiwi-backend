@@ -3,8 +3,8 @@
 CAUTION: Do not modify this file unless you know what you are doing.
  Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="1.1.6" use-changelog="false" max-obj-count="16"
-	 last-position="0,162" last-zoom="0.8" scene-rect="-8,-227,2342.26,1682.92"
+<dbmodel pgmodeler-ver="1.1.6" use-changelog="false" max-obj-count="19"
+	 last-position="-1,13" last-zoom="0.8" scene-rect="-8,-227,2447.05,1911.92"
 	 default-schema="public" default-owner="postgres"
 	 layers="Default layer,Projects layer"
 	 active-layers="0,1"
@@ -107,7 +107,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="roles" layers="0" collapse-mode="2" max-obj-count="2" z-value="0">
 	<schema name="public"/>
 	<role name="mydb"/>
-	<position x="600" y="-100"/>
+	<position x="960" y="-120"/>
 	<column name="id" not-null="true" sequence="public.roles_id_seq">
 		<type name="integer" length="0"/>
 	</column>
@@ -130,7 +130,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="products" layers="0" collapse-mode="2" max-obj-count="15" z-value="0">
 	<schema name="public"/>
 	<role name="mydb"/>
-	<position x="1160" y="-180"/>
+	<position x="1460" y="-180"/>
 	<column name="id" not-null="true" sequence="public.products_id_seq">
 		<type name="integer" length="0"/>
 	</column>
@@ -186,7 +186,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="product_images" layers="0" collapse-mode="2" max-obj-count="4" z-value="0">
 	<schema name="public"/>
 	<role name="mydb"/>
-	<position x="1860" y="-160"/>
+	<position x="2020" y="-160"/>
 	<column name="id" not-null="true" sequence="public.product_images_id_seq">
 		<type name="integer" length="0"/>
 	</column>
@@ -212,7 +212,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="projects" layers="0" collapse-mode="2" rls-enabled="true" max-obj-count="18" z-value="0">
 	<schema name="public"/>
 	<role name="mydb"/>
-	<position x="580" y="180"/>
+	<position x="800" y="80"/>
 	<column name="id" not-null="true" default-value="gen_random_uuid()">
 		<type name="uuid" length="0"/>
 	</column>
@@ -238,8 +238,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="text" length="255"/>
 		<comment> <![CDATA[Путь к превью изображению]]> </comment>
 	</column>
-	<column name="total">
-		<type name="text" length="0"/>
+	<column name="total" not-null="true" default-value="0">
+		<type name="integer" length="0"/>
 		<comment> <![CDATA[Пока просто итоговая цена в рублях. Далее можно сделать:
 {
    "currency_code_3": "EUR",
@@ -270,10 +270,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<table name="pages" layers="0" collapse-mode="2" max-obj-count="4" z-value="0">
+<table name="pages" layers="0" collapse-mode="2" max-obj-count="6" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="120" y="520"/>
+	<position x="840" y="720"/>
 	<column name="id" not-null="true" default-value="gen_random_uuid()">
 		<type name="uuid" length="0"/>
 		<comment> <![CDATA[соответствует "key" в JSON в cheerz. Это v1 UUID]]> </comment>
@@ -301,6 +301,21 @@ CAUTION: Do not modify this file unless you know what you are doing.
 }
 ]]]> </comment>
 	</column>
+	<column name="used_photos" not-null="true" default-value="'[]'">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[Массив объектов использованных фото вида:
+[
+   {
+   "key": "upload-efb95c114f072a8cab87fe2948a66aaca90ac8a2",
+   "creation_date": "2025-07-15T12:17:12.819Z",
+   "height_px": 1476,
+   "width_px": 1111,
+   "fotom_key": "efb95c114f072a8cab87fe2948a66aaca90ac8a2",
+   "provider": "upload",
+   "provider_ref": "efb95c114f072a8cab87fe2948a66aaca90ac8a2"
+   }
+]]]> </comment>
+	</column>
 	<constraint name="pages_pk" type="pk-constr" table="public.pages">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
@@ -309,7 +324,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="editable_pictures" layers="0" collapse-mode="2" max-obj-count="14" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="120" y="880"/>
+	<position x="440" y="1300"/>
 	<column name="id" not-null="true" default-value="gen_random_uuid()">
 		<type name="uuid" length="0"/>
 	</column>
@@ -357,11 +372,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<table name="product_templates" layers="0" collapse-mode="2" max-obj-count="15" z-value="0">
+<table name="product_templates" layers="0" collapse-mode="2" max-obj-count="25" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
 	<comment> <![CDATA[Содержит шаблон в целом.]]> </comment>
-	<position x="1160" y="360"/>
+	<position x="1400" y="380"/>
 	<column name="id" not-null="true" default-value="gen_random_uuid()">
 		<type name="uuid" length="0"/>
 	</column>
@@ -410,10 +425,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="text" length="0"/>
 		<comment> <![CDATA["book", "strip", etc]]> </comment>
 	</column>
-	<column name="pages">
+	<column name="pages" not-null="true" default-value="'[]'">
 		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[Макет заготовки для отправки начального состояния]]> </comment>
 	</column>
-	<column name="print_quantities">
+	<column name="print_quantities" not-null="true" default-value="'[]'">
 		<type name="jsonb" length="0"/>
 		<comment> <![CDATA[Массив начального количества объектов страниц вида:
 [
@@ -421,6 +437,122 @@ CAUTION: Do not modify this file unless you know what you are doing.
      page_key: "page-0",
      quantity: 1,
   },
+]]]> </comment>
+	</column>
+	<column name="asset_definitions" not-null="true" default-value="'[]'">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[Массив объектов ассетов вида
+{
+   "asset_id": "37620abe-ff4d-11ea-bdb7-ab19a951a9a8",
+   "key": "transparent",
+   "format_type": "default"
+}]]> </comment>
+	</column>
+	<column name="category_definitions" not-null="true" default-value="'[]'">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[Определяет категории и порядок их расстановки для внутренних страниц альбома. Текст ____ 1 Фото ___ 2 Фото ___ и т.д.
+Вид:
+[
+{
+   "key": "0",
+   "order": 1,
+   "photo_count": 0,
+   "localized_content": "Text"
+},
+{
+   "key": "1",
+   "order": 2,
+   "photo_count": 1,
+   "localized_content": "1 Photo"
+}
+]]]> </comment>
+	</column>
+	<column name="color_definitions" not-null="true" default-value="'[]'">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[Храним массив объектов вида
+[
+   {
+      "key": "white",
+      "theme_value": "#ffffff",
+      "font_colors": [
+         {
+            "value": "#000000",
+             "key": "primary"
+          },
+          {
+            "value": "#000000",
+            "key": "secondary"
+          }
+          ],
+      "background_value": "#ffffff",
+      "tint_colors": []
+   }
+]]]> </comment>
+	</column>
+	<column name="font_definitions" not-null="true" default-value="'[]'">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[Для определения всех шрифтов и их параметров
+{
+   "font_tag": "montserrat",
+   "key": "font-montserrat",
+   "width_per_height_mean_char_ratio": 0.65
+}]]> </comment>
+	</column>
+	<column name="option_definitions" not-null="true" default-value="'[]'">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[Для хранения опций для данного продукта
+{
+   "key": "product_tag",
+   "type": "customization",
+   "only_global": true,
+   "option_tag": "product_tag",
+   "option_choices": [
+   {
+      "value": "print8x10-glossy-pack500",
+      "asset_key": "option_choice_asset_glossy",
+      "localized_label": "Glossy paper"
+   }
+   ],
+   "icon_asset_key": "icon_option",
+   "localized_option_title": "Paper type"
+}
+]]]> </comment>
+	</column>
+	<column name="presentation_definitions" not-null="true" default-value="'[]'">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[Для хранения представлений товара вида (glossy/matte):
+[
+{
+   "asset_key": "transparent",
+   "content_x_dmm": 0,
+   "content_y_dmm": 0,
+   "height_dmm": 1020,
+   "key": "matte",
+   "width_dmm": 850
+}
+]]]> </comment>
+	</column>
+	<column name="shape_definitions" not-null="true" default-value="'[]'">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[Для хранения определений фигур (круг квадрат овал):
+[
+{
+   "key": "circle",
+   "ratio": 1.0,
+   "svg_content": "\u003csvg id=\"Calque_1\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 221.1 221.1\"\u003e\u003cdefs\u003e\u003cstyle\u003e.cls-1{fill:#ffffff;}\u003c/style\u003e\u003c/defs\u003e\u003ccircle class=\"cls-1\" cx=\"110.55\" cy=\"110.55\" r=\"110.55\"/\u003e\u003c/svg\u003e"
+}
+]]]> </comment>
+	</column>
+	<column name="tag_definitions" not-null="true" default-value="'[]'">
+		<type name="jsonb" length="0"/>
+		<comment> <![CDATA[[
+{
+   "key": "brush",
+   "background_color": "#00c1f6",
+   "font_color": "#ffffff",
+   "asset_key": "brush",
+   "localized_content": "NEW"
+}
 ]]]> </comment>
 	</column>
 	<constraint name="product_templates_pk" type="pk-constr" table="public.product_templates">
@@ -432,7 +564,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<schema name="public"/>
 	<role name="postgres"/>
 	<comment> <![CDATA[Каждая страница шаблона (например, PAGE-1-COVER, PAGE-101).]]> </comment>
-	<position x="1180" y="840"/>
+	<position x="1440" y="1040"/>
 	<column name="id" not-null="true">
 		<type name="serial" length="0"/>
 	</column>
@@ -483,7 +615,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<schema name="public"/>
 	<role name="postgres"/>
 	<comment> <![CDATA[Элементы на странице: изображения, текст и т.д.]]> </comment>
-	<position x="1900" y="720"/>
+	<position x="1980" y="860"/>
 	<column name="id" not-null="true">
 		<type name="serial" length="0"/>
 	</column>
@@ -576,7 +708,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="editable_texts" layers="0" collapse-mode="2" max-obj-count="6" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="480" y="900"/>
+	<position x="820" y="1080"/>
 	<column name="id" not-null="true" default-value="gen_random_uuid()">
 		<type name="uuid" length="0"/>
 	</column>
@@ -603,7 +735,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="font_definitions" layers="0" collapse-mode="2" max-obj-count="3" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="1000" y="1260"/>
+	<position x="1400" y="1420"/>
 	<column name="key" not-null="true">
 		<type name="text" length="0"/>
 		<comment> <![CDATA[Ключ шрифта, например "font-montserrat"]]> </comment>
@@ -624,7 +756,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="color_definitions" layers="0" collapse-mode="2" max-obj-count="6" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="700" y="1260"/>
+	<position x="1120" y="1420"/>
 	<column name="key" not-null="true">
 		<type name="text" length="0"/>
 		<comment> <![CDATA["key": "white",]]> </comment>
@@ -656,7 +788,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="product_configs" layers="0" collapse-mode="2" max-obj-count="21" z-value="0">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="1920" y="160"/>
+	<position x="2020" y="140"/>
 	<column name="id" not-null="true">
 		<type name="serial" length="0"/>
 	</column>
@@ -724,6 +856,83 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
+<table name="galleries" layers="0" collapse-mode="2" max-obj-count="9" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="60" y="520"/>
+	<column name="id" not-null="true" default-value="gen_random_uuid()">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="user_id" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="cover">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Обложка. "efb95c114f072a8cab87fe2948a66aaca90ac8a2"]]> </comment>
+	</column>
+	<column name="quantity" not-null="true" default-value="0">
+		<type name="integer" length="0"/>
+		<comment> <![CDATA[Кол-во фото в галлерее]]> </comment>
+	</column>
+	<column name="upload_outside_session" not-null="true" default-value="false">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="upload_origin">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[Кто загрузил фото. Зачем?]]> </comment>
+	</column>
+	<column name="created_at" not-null="true" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="updated_at" not-null="true" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<constraint name="galleries_pk" type="pk-constr" table="public.galleries">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="user_photos" layers="0" collapse-mode="2" max-obj-count="12" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="80" y="900"/>
+	<column name="blake3" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="gallery_id" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="filename">
+		<type name="text" length="0"/>
+	</column>
+	<column name="width_px" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="height_px" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="provider_tag">
+		<type name="text" length="0"/>
+	</column>
+	<column name="taken_at">
+		<type name="timestamptz" length="0"/>
+		<comment> <![CDATA[Из метаданных изображения]]> </comment>
+	</column>
+	<column name="last_modified_at">
+		<type name="timestamptz" length="0"/>
+		<comment> <![CDATA[Из метаданных изображения]]> </comment>
+	</column>
+	<column name="uploaded_at" not-null="true" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="updated_at" not-null="true" default-value="CURRENT_TIMESTAMP">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<constraint name="user_photos_pk" type="pk-constr" table="public.user_photos">
+		<columns names="blake3" ref-type="src-columns"/>
+	</constraint>
+</table>
+
 <constraint name="product_images_product_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
 	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.products" table="public.product_images">
 	<columns names="product_id" ref-type="src-columns"/>
@@ -754,6 +963,12 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
+<constraint name="photo_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.user_photos" table="public.editable_pictures">
+	<columns names="selection_photo_key" ref-type="src-columns"/>
+	<columns names="blake3" ref-type="dst-columns"/>
+</constraint>
+
 <constraint name="owner_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
 	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.products" table="public.product_templates">
 	<columns names="product_id" ref-type="src-columns"/>
@@ -781,6 +996,18 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <constraint name="owner_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
 	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.products" table="public.product_configs">
 	<columns names="product_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="owner_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.users" table="public.galleries">
+	<columns names="user_id" ref-type="src-columns"/>
+	<columns names="user_id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="owner_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.galleries" table="public.user_photos">
+	<columns names="gallery_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
@@ -868,5 +1095,28 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-table="public.product_configs"
 	 dst-table="public.products" reference-fk="owner_fk"
 	 src-required="false" dst-required="true"/>
+
+<relationship name="rel_galleries_users" type="relfk" layers="0"
+	 src-table="public.galleries"
+	 dst-table="public.users" reference-fk="owner_fk"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="102.387" y="-32.353"/>
+	</label>
+</relationship>
+
+<relationship name="rel_user_photos_galleries" type="relfk" layers="0"
+	 src-table="public.user_photos"
+	 dst-table="public.galleries" reference-fk="owner_fk"
+	 src-required="false" dst-required="true"/>
+
+<relationship name="rel_editable_pictures_user_photos" type="relfk" layers="0"
+	 src-table="public.editable_pictures"
+	 dst-table="public.user_photos" reference-fk="photo_fk"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="-179.854" y="40.047"/>
+	</label>
+</relationship>
 
 </dbmodel>

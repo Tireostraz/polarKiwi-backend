@@ -1,4 +1,5 @@
 import pool from "../db/db.js";
+import { DefinitionSchema } from "../validation/definitionSchemas.js";
 
 //загружаем состояние проекта (редактируемые страницы) api/edit/95160109/content
 export const loadPages = async (req, res) => {
@@ -38,7 +39,7 @@ export const loadPages = async (req, res) => {
 
   //Смотрим, есть ли уже страницы данного проекта
   const pagesResult = await pool.query(
-    "SELECT id, pages, print_quantities FROM pages WHERE pages.project_id = $1",
+    "SELECT id, pages, print_quantities, used_photos FROM pages WHERE pages.project_id = $1",
     [projectId]
   );
 
@@ -142,9 +143,9 @@ export const loadPages = async (req, res) => {
     [pages.id]
   );
 
-  console.log("pictures: ", picturesResult.rows);
+  /* console.log("pictures: ", picturesResult.rows);
   console.log("texts: ", textsResult.rows);
-  console.log("pages:", pages);
+  console.log("pages:", pages); */
   pages.pages = pages.pages.map((page) => {
     return {
       ...page,
@@ -159,14 +160,22 @@ export const loadPages = async (req, res) => {
       definition_version: template.definition_version,
       //locale: definitions.locale, пока не нужно
       pages: pages.pages,
-      selection_photos: [], //TODO исправить. Далее если используем это
-      gallery_photos: [], //TODO исправить. Далее если используем это
+      used_photos: pages.used_photos,
+      //gallery_photos: [], TODO исправить. Далее если используем это
       template_type: template.template_type,
       definition_version: template.definition_version,
       status: project.status,
       template_id: template.id,
     },
   };
+
+  //Добавляем к ответу print_quantities если есть
+  if (pages.print_quantities) {
+    formatedDefinitions.definition = {
+      ...formatedDefinitions.definition,
+      print_quantities: pages.print_quantities,
+    };
+  }
 
   res.status(200).json({ response: formatedDefinitions });
 };
@@ -185,6 +194,7 @@ export const loadTemplate = async (req, res) => {
 
   let project;
 
+  //Запрос проекта по его id
   try {
     const result = await pool.query("SELECT * FROM projects WHERE id = $1", [
       projectId,
@@ -201,6 +211,7 @@ export const loadTemplate = async (req, res) => {
 
   let template;
 
+  //Запрос шаблона по template_id из projects
   try {
     const result = await pool.query(
       "SELECT * FROM product_templates WHERE id = $1",
@@ -216,6 +227,7 @@ export const loadTemplate = async (req, res) => {
 
   let template_pages;
 
+  //Запрос template_pages по product_templates id
   try {
     const result = await pool.query(
       "SELECT category_key, filter_type_keys, height_dmm, width_dmm, key, type, color_keys, elements FROM template_pages WHERE template_id = $1",
@@ -225,6 +237,8 @@ export const loadTemplate = async (req, res) => {
   } catch (e) {
     console.error("Ошибка получения шаблонов страниц из БД", e);
   }
+
+  //Формирование массива ключей color_keys и font_keys для дальнейшего запроса цветовых схем и шрифтов
 
   const formatedTemplate = {
     id: template.id,
@@ -241,7 +255,15 @@ export const loadTemplate = async (req, res) => {
       definition_version: template.definition_version,
       min_dpi: template.min_dpi,
       template_type: template.template_type,
+      asset_definitions: template.asset_definitions,
+      category_definitions: template.category_definitions,
+      color_definitions: template.color_definitions,
+      font_definitions: template.font_definitions,
+      option_definitions: template.option_definitions,
       page_definitions: template_pages,
+      presentation_definitions: template.presentation_definitions,
+      shape_definitions: template.shape_definitions,
+      tag_definitions: template.tag_definitions,
     },
   };
 
@@ -251,4 +273,98 @@ export const loadTemplate = async (req, res) => {
 export const savePages = async (req, res) => {
   const userId = req.user.user_id || null;
   const guestId = req.guestId || null;
+
+  const projectId = req.params.projectId;
+
+  let project;
+
+  //Запрос проекта по id
+  try {
+    const response = await pool.query("SELECT * FROM projects WHERE id = $1", [
+      projectId,
+    ]);
+    project = response.rows[0];
+  } catch (e) {
+    console.error("Ошибка при запросе проекта", e);
+    return res.status(500).json({ error: "Ошибка при запросе проекта" });
+  }
+
+  if (!project) {
+    return res.status(404).json({ error: "Проект не найден" });
+  }
+
+  if (userId !== project.user_id && guestId !== project.guestId) {
+    console.error("Ошибка авторизации. Требуется guestId или userId");
+    return res.status(403).json({ error: "Ошибка авторизации" });
+  }
+
+  let page;
+
+  //Запрос pages по project_id
+  try {
+    const response = await pool.query(
+      "SELECT * FROM pages WHERE project_id = $1",
+      [projectId]
+    );
+    page = response.rows[0];
+  } catch (e) {
+    console.error("Ошибка при запросе pages");
+    return res.status(500).json({ error: "Ошибка при запросе pages" });
+  }
+
+  if (!page) {
+    console.error(
+      "Требуется наличие page в таблице pages перед сохранением состояния проекта"
+    );
+    return res.status(404).json({
+      error:
+        "Требуется наличие page в таблице pages перед сохранением состояния проекта",
+    });
+  }
+
+  /* console.log("Pages:", req.body.definition.pages);
+  console.log("Used_photos:", req.body.definition.used_photos); */
+
+  let validatedDefinition;
+  try {
+    validatedDefinition = DefinitionSchema.parse(req.body.definition);
+  } catch (e) {
+    console.error("Ошибка валидации definition", e);
+    return res
+      .status(400)
+      .json({ error: "Некорректный формат данных", details: e.errors });
+  }
+
+  //Добавляем в таблицу pages новое полученное состояние проекта.
+  try {
+    await pool.query(
+      "UPDATE pages SET pages = $1, used_photos = $2, print_quantities = $3 WHERE id = $4",
+      [
+        JSON.stringify(validatedDefinition.pages),
+        JSON.stringify(validatedDefinition.used_photos),
+        JSON.stringify(validatedDefinition.print_quantities),
+        page.id,
+      ]
+    );
+  } catch (e) {
+    console.error("Ошибка добавляения данных в pages", e);
+    return res.status(500).json({ error: "Ошибка добавления данных в pages" });
+  }
+
+  //Для проверки запрашиваем новые значения что добавили
+
+  let newPage;
+  try {
+    const response = await pool.query("SELECT * FROM pages WHERE id=$1", [
+      page.id,
+    ]);
+    newPage = response.rows[0];
+  } catch (e) {
+    console.error("Ошибка при получении нового значения pages", e);
+    return res
+      .status(500)
+      .json({ error: "Ошибка при получении нового значения pages" });
+  }
+
+  res.status(200).json({ response: newPage });
 };

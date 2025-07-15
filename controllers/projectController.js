@@ -126,7 +126,6 @@ export const draftProjects = async (req, res) => {
       "SELECT p.*, pr.slug as product_slug, pr.price as product_price FROM projects p LEFT JOIN products pr ON p.product_id = pr.id WHERE (user_id = $1 OR guest_id = $2)",
       [userId, guestId]
     );
-    const resultProduct = await pool.query("");
 
     const formatedDrafts = result.rows.map((project) => {
       return {
@@ -136,7 +135,7 @@ export const draftProjects = async (req, res) => {
           title: project.title,
           subtitle: project.subtitle,
           image_url: project.image_url,
-          //total: {для цены. добавить потом. "currency_code_3": "USD", "cents": 6500} пока будет в product,
+          total: project.total, //{для цены. добавить потом. "currency_code_3": "USD", "cents": 6500} пока будет в product,
           //is_in_cart: false, аналог - статус
           status: project.status,
           quantity: project.quantity,
