@@ -9,7 +9,7 @@ export const loadPages = async (req, res) => {
 
   if (!userId && !guestId) {
     return res
-      .status(404)
+      .status(401)
       .json({ error: "Ошибка авторизации. Требуется userId или guestId" });
   }
 
@@ -179,7 +179,7 @@ export const loadTemplate = async (req, res) => {
 
   if (!userId && !guestId) {
     return res
-      .status(404)
+      .status(401)
       .json({ error: "Ошибка авторизации. Требуется userId или guestId" });
   }
 
@@ -193,6 +193,10 @@ export const loadTemplate = async (req, res) => {
   } catch (e) {
     console.error("Ошибка получения проектов", e);
     return res.status(500).json({ error: "Ошибка при получении проектов" });
+  }
+
+  if (!project) {
+    return res.status(404).json({ error: "Данного проекта не существует" });
   }
 
   let template;
@@ -237,8 +241,8 @@ export const loadTemplate = async (req, res) => {
       definition_version: template.definition_version,
       min_dpi: template.min_dpi,
       template_type: template.template_type,
+      page_definitions: template_pages,
     },
-    page_definitions: template_pages,
   };
 
   res.status(200).json({ response: formatedTemplate });
