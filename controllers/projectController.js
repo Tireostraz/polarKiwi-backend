@@ -119,7 +119,7 @@ export const getProjectsIds = async (req, res) => {
 //Получить все черновики /api/projects/drafts
 export const draftProjects = async (req, res) => {
   try {
-    const userId = req.user.user_id || null;
+    const userId = req.user?.user_id || null;
     const guestId = req.guestId || null;
 
     const result = await pool.query(
