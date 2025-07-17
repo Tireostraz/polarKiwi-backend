@@ -408,7 +408,7 @@ router.put("/:id", updateProject);
  *       404:
  *         description: Проект не найден
  */
-router.delete("/:id", deleteProject);
+router.delete("/:projectId", deleteProject);
 
 /**
  * @swagger

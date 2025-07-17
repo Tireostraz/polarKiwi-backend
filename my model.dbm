@@ -4,7 +4,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
  Unexpected results may occur if the code is changed deliberately.
 -->
 <dbmodel pgmodeler-ver="1.1.6" use-changelog="false" max-obj-count="19"
-	 last-position="-1,13" last-zoom="0.8" scene-rect="-8,-227,2447.05,1911.92"
+	 last-position="170,14" last-zoom="0.8" scene-rect="-8,-227,2447.05,1911.92"
 	 default-schema="public" default-owner="postgres"
 	 layers="Default layer,Projects layer"
 	 active-layers="0,1"
@@ -209,7 +209,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<role name="mydb"/>
 </sequence>
 
-<table name="projects" layers="0" collapse-mode="2" rls-enabled="true" max-obj-count="18" z-value="0">
+<table name="projects" layers="0" collapse-mode="2" rls-enabled="true" max-obj-count="19" z-value="0">
 	<schema name="public"/>
 	<role name="mydb"/>
 	<position x="800" y="80"/>
@@ -264,6 +264,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="expired_at" not-null="true">
 		<type name="timestamptz" length="0"/>
 		<comment> <![CDATA[Дата удаления (6 месяцев после добавления)]]> </comment>
+	</column>
+	<column name="deleted_at">
+		<type name="timestamptz" length="0"/>
 	</column>
 	<constraint name="projects_pk" type="pk-constr" table="public.projects">
 		<columns names="id" ref-type="src-columns"/>
@@ -952,13 +955,13 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </constraint>
 
 <constraint name="rel_project_id" type="fk-constr" comparison-type="MATCH SIMPLE"
-	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.projects" table="public.pages">
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.projects" table="public.pages">
 	<columns names="project_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
 <constraint name="owner_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
-	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.pages" table="public.editable_pictures">
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.pages" table="public.editable_pictures">
 	<columns names="page_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
@@ -988,7 +991,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </constraint>
 
 <constraint name="owner_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
-	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.pages" table="public.editable_texts">
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.pages" table="public.editable_texts">
 	<columns names="page_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>

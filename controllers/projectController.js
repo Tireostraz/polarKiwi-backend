@@ -64,7 +64,7 @@ export const getProjects = async (req, res) => {
     const guestId = req.guestId || null;
 
     const result = await pool.query(
-      `SELECT * FROM projects WHERE (user_id = $1 OR guest_id = $2) ORDER BY updated_at DESC`,
+      `SELECT * FROM projects WHERE ((user_id = $1 OR guest_id = $2) AND deleted_at IS NULL) ORDER BY updated_at DESC`,
       [userId, guestId]
     );
     res.status(200).json(result.rows);
@@ -84,20 +84,20 @@ export const getProjectsIds = async (req, res) => {
 
     if (userId) {
       resultInCart = await pool.query(
-        `SELECT id, quantity FROM projects WHERE user_id = $1 AND status = 'in_cart' ORDER BY updated_at DESC`,
+        `SELECT id, quantity FROM projects WHERE user_id = $1 AND status = 'in_cart' AND deleted_at IS NULL ORDER BY updated_at DESC`,
         [userId]
       );
       resultDraft = await pool.query(
-        `SELECT id, quantity FROM projects WHERE user_id = $1 AND status = 'draft' ORDER BY updated_at DESC`,
+        `SELECT id, quantity FROM projects WHERE user_id = $1 AND status = 'draft' AND deleted_at IS NULL ORDER BY updated_at DESC`,
         [userId]
       );
     } else if (guestId) {
       resultInCart = await pool.query(
-        `SELECT id, quantity FROM projects WHERE guest_id = $1 AND status = 'in_cart' ORDER BY updated_at DESC`,
+        `SELECT id, quantity FROM projects WHERE guest_id = $1 AND status = 'in_cart' AND deleted_at IS NULL ORDER BY updated_at DESC`,
         [guestId]
       );
       resultDraft = await pool.query(
-        `SELECT id, quantity FROM projects WHERE guest_id = $1 AND status = 'draft' ORDER BY updated_at DESC`,
+        `SELECT id, quantity FROM projects WHERE guest_id = $1 AND status = 'draft' AND deleted_at IS NULL ORDER BY updated_at DESC`,
         [guestId]
       );
     } else {
@@ -123,7 +123,10 @@ export const draftProjects = async (req, res) => {
     const guestId = req.guestId || null;
 
     const result = await pool.query(
-      "SELECT p.*, pr.slug as product_slug, pr.price as product_price FROM projects p LEFT JOIN products pr ON p.product_id = pr.id WHERE (user_id = $1 OR guest_id = $2)",
+      `SELECT p.*, pr.slug as product_slug, pr.price as product_price
+      FROM projects p
+      LEFT JOIN products pr ON p.product_id = pr.id
+      WHERE (user_id = $1 OR guest_id = $2) AND p.deleted_at IS NULL`,
       [userId, guestId]
     );
 
@@ -164,7 +167,7 @@ export const getProjectById = async (req, res) => {
       FROM projects as p
       LEFT JOIN products as pr ON p.product_id = pr.id
       LEFT JOIN product_configs as pr_c ON pr.id = pr_c.product_id
-      WHERE p.id = $1 AND (p.user_id = $2 OR p.guest_id = $3)`,
+      WHERE p.id = $1 AND (p.user_id = $2 OR p.guest_id = $3) AND p.deleted_at IS NULL`,
       [id, userId, guestId]
     );
 
@@ -238,7 +241,7 @@ export const updateProject = async (req, res) => {
            pages = $6,
            photos = $7,
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $8 AND (user_id = $9 OR guest_id = $10)
+       WHERE id = $8 AND (user_id = $9 OR guest_id = $10) AND deleted_at IS NULL
        RETURNING *`,
       [
         title,
@@ -273,20 +276,41 @@ export const deleteProject = async (req, res) => {
     const userId = req.user?.user_id || null;
     const guestId = req.guestId || null;
 
-    const { id: projectId } = req.params;
+    const projectId = req.params.projectId;
 
-    const result = await pool.query(
-      "DELETE FROM projects WHERE id = $1 AND (user_id = $2 OR guest_id = $3) RETURNING *",
-      [projectId, userId, guestId]
-    );
+    try {
+      const result = await pool.query(
+        `SELECT * 
+        FROM projects
+        WHERE id = $1 AND (user_id = $2 OR guest_id = $3)`,
+        [projectId, userId, guestId]
+      );
 
-    if (result.rows.length === 0) {
+      if (result.rows.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "Проект не найден или нет доступа" });
+      }
+    } catch (e) {
+      console.error("Ошибка запроса проекта для удаления", e);
       return res
-        .status(404)
-        .json({ message: "Проект не найден или нет доступа" });
+        .status(500)
+        .json({ responce: "Ошибка запроса при удалении проекта" });
     }
 
-    const ownerId = userId || guestId;
+    await pool.query(
+      `UPDATE projects
+      SET deleted_at = CURRENT_TIMESTAMP
+      WHERE id = $1`,
+      [projectId]
+    );
+
+    /* const result = await pool.query(
+      "DELETE FROM projects WHERE id = $1 AND (user_id = $2 OR guest_id = $3) RETURNING *",
+      [projectId, userId, guestId]
+    ); */
+
+    /* const ownerId = userId || guestId;
 
     const projectDir = path.resolve("uploads", `${ownerId}`, projectId);
 
@@ -294,7 +318,7 @@ export const deleteProject = async (req, res) => {
       await fs.rm(projectDir, { recursive: true, force: true });
     } catch (err) {
       console.warn("Ошибка удаления проекта", err);
-    }
+    } */
 
     res.status(204).send();
   } catch (err) {
