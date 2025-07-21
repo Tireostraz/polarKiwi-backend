@@ -174,46 +174,45 @@ export const getProjectById = async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "Проект не найден" });
     }
+    const p = result.rows[0];
 
-    const formatedProject = result.rows.map((p) => {
-      return {
-        project: {
-          id: p.id,
-          title: p.title,
-          subtitle: p.subtitle,
-          image_url: p.image_url,
-          total: p.total,
-          status: p.status,
-          quantity: p.quantity,
-          can_be_reordered: p.can_be_reordered,
-          created_at: p.created_at,
-          updated_at: p.updated_at,
-          product: {
-            slug: p.product_slug,
-            is_customizable_on_web_mobile: p.is_customizable_on_web_mobile,
-            bypass_customization: p.bypass_customization,
-            is_out_of_stock: p.is_out_of_stock,
-            is_quantity_editable: p.is_quantity_editable,
-          },
+    const formatedProject = {
+      project: {
+        id: p.id,
+        title: p.title,
+        subtitle: p.subtitle,
+        image_url: p.image_url,
+        total: p.total,
+        status: p.status,
+        quantity: p.quantity,
+        can_be_reordered: p.can_be_reordered,
+        created_at: p.created_at,
+        updated_at: p.updated_at,
+        product: {
+          slug: p.product_slug,
+          is_customizable_on_web_mobile: p.is_customizable_on_web_mobile,
+          bypass_customization: p.bypass_customization,
+          is_out_of_stock: p.is_out_of_stock,
+          is_quantity_editable: p.is_quantity_editable,
         },
-        config: {
-          min_page_count: p.min_page_count,
-          max_page_count: p.max_page_count,
-          page_increment_step: p.page_increment_step,
-          page_increment_price: p.page_increment_price,
-          display_title: p.display_title,
-          display_format: p.display_format,
-          display_page_name_singular: p.display_page_name_singular,
-          display_page_name_plural: p.display_page_name_plural,
-          min_column_count: p.min_column_count,
-          max_column_count: p.max_column_count,
-          is_zoom_out_enabled: p.is_zoom_out_enabled,
-          should_start_with_gallery: p.should_start_with_gallery,
-          dpi_thresholds: p.dpi_thresholds,
-        },
-        addons: [{}, {}],
-      };
-    });
+      },
+      config: {
+        min_page_count: p.min_page_count,
+        max_page_count: p.max_page_count,
+        page_increment_step: p.page_increment_step,
+        page_increment_price: p.page_increment_price,
+        display_title: p.display_title,
+        display_format: p.display_format,
+        display_page_name_singular: p.display_page_name_singular,
+        display_page_name_plural: p.display_page_name_plural,
+        min_column_count: p.min_column_count,
+        max_column_count: p.max_column_count,
+        is_zoom_out_enabled: p.is_zoom_out_enabled,
+        should_start_with_gallery: p.should_start_with_gallery,
+        dpi_thresholds: p.dpi_thresholds,
+      },
+      addons: [{}, {}],
+    };
 
     return res.status(200).json({ response: formatedProject });
   } catch (err) {
