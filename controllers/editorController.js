@@ -225,6 +225,12 @@ export const loadTemplate = async (req, res) => {
       .json({ error: "Ошибка при получении шаблона проекта из БД" });
   }
 
+  if (!template) {
+    return res
+      .status(404)
+      .json({ error: "Шаблон у данного проекта не найден" });
+  }
+
   let template_pages;
 
   //Запрос template_pages по product_templates id
@@ -236,6 +242,12 @@ export const loadTemplate = async (req, res) => {
     template_pages = result.rows;
   } catch (e) {
     console.error("Ошибка получения шаблонов страниц из БД", e);
+  }
+
+  if (!template_pages) {
+    return res
+      .status(404)
+      .json({ error: "Страницы у данного шаблона не найдены" });
   }
 
   //Формирование массива ключей color_keys и font_keys для дальнейшего запроса цветовых схем и шрифтов
